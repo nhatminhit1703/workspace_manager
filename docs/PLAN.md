@@ -319,11 +319,14 @@ Bản PowerShell **không nằm trong repo public này** (đã gỡ ngày 2026-1
 | PM report trong app: KPI, việc cần làm, theo dõi branch, daily report, team, xuất HTML | ✅ khớp bản PowerShell (25 repo, 12 High) |
 | AI report (Gemini): key DPAPI / biến môi trường / import .env, xem trước dữ liệu gửi đi, nút tắt AI, Markdown -> HTML | ✅ gọi Gemini thật OK |
 | Hiệu năng: git không chạy trên luồng UI, tải dữ liệu sau khi mở cửa sổ, ReadyToRun | ✅ |
-| Test | ✅ 99 test |
+
+| Dashboard (trang chủ) + thiết lập lần đầu: git, workspace, git identity, danh sách repo (lưu local) + clone repo còn thiếu, key AI | ✅ |
+| Bug hunt branch: luật chung (debug, host cứng + pattern local, SQL ghép chuỗi, catch rỗng, placeholder, .min cũ, desktop/mobile, thiếu test, commit rủi ro), PCL VI + EN, xuất TSV | ✅ 4 repo thật trong 2,6 s |
+| Test | ✅ 124 test |
 
 ### Phase 0 – còn lại
-PM Dashboard (trang chủ) + thiết lập lần đầu (chọn workspace, clone repo còn thiếu từ danh sách URL lưu local, git identity)
-→ bug hunt (luật chung, cấu hình được) → release `v0.1.0` → bỏ hẳn bản PowerShell.
+Merge `feature/phase0-foundation` vào `main` → tag `v0.1.0` (workflow release tự build bộ cài và đăng GitHub Releases)
+→ cài bản release, dùng thay bản PowerShell → xoá thư mục `workspace_manager_legacy` khi đã yên tâm.
 
 ## 10b. Việc làm ngay (Phase 0, tuần 1) – kế hoạch ban đầu
 
