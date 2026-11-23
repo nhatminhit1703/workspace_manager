@@ -38,7 +38,7 @@ public static class RelativeTime
             return Plural((int)span.TotalDays, "day");
         }
 
-        if (span < TimeSpan.FromDays(730))
+        if (span < TimeSpan.FromDays(365))
         {
             return Plural((int)(span.TotalDays / 30.4), "month");
         }
