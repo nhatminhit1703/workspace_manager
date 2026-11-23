@@ -49,6 +49,7 @@ internal sealed class MemorySettings(AppSettings? initial = null) : ISettingsSto
         AiEnabled = s.AiEnabled,
         AiModel = s.AiModel,
         RepoList = [.. s.RepoList],
+        BugHuntExtraHostPattern = s.BugHuntExtraHostPattern,
     };
 }
 

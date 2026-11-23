@@ -1,0 +1,91 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WorkspaceManager.Modules.Pm.BugHunt"
+             x:Class="WorkspaceManager.Modules.Pm.BugHunt.BugHuntView"
+             x:DataType="vm:BugHuntViewModel">
+
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Padding="12,10" BorderThickness="0,0,0,1"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+      <StackPanel Spacing="8">
+        <WrapPanel>
+          <TextBlock Text="Branch:" VerticalAlignment="Center" Opacity="0.7" Margin="0,0,6,0" />
+          <TextBox Text="{Binding Branch}" PlaceholderText="feature/123-login" Width="380" />
+          <Button Content="Run" Command="{Binding RunCommand}" Classes="accent" Margin="8,0,0,0" HotKey="F5" />
+          <TextBlock Text="Show:" VerticalAlignment="Center" Opacity="0.7" Margin="16,0,6,0" />
+          <ComboBox ItemsSource="{Binding Audiences}" SelectedItem="{Binding AudienceFilter}" Width="120" />
+          <Button Content="Copy PCL (VI)" Command="{Binding CopyViCommand}" Margin="16,0,0,0" />
+          <Button Content="Export VI..." Command="{Binding ExportViCommand}" Margin="6,0,0,0" />
+          <Button Content="Export EN..." Command="{Binding ExportEnCommand}" Margin="6,0,0,0" />
+          <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Width="100" Margin="12,0,0,0" />
+        </WrapPanel>
+        <WrapPanel>
+          <TextBlock Text="Extra hosts that must not be hard-coded (regex, kept on this machine):" VerticalAlignment="Center" Opacity="0.7" Margin="0,0,6,0" />
+          <TextBox Text="{Binding ExtraHostPattern}" PlaceholderText="staging\.example\.com|test-server" Width="360" />
+        </WrapPanel>
+      </StackPanel>
+    </Border>
+
+    <Border DockPanel.Dock="Bottom" Padding="12,6" BorderThickness="0,1,0,0"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+      <TextBlock Text="{Binding StatusText}" />
+    </Border>
+
+    <DataGrid DockPanel.Dock="Top" ItemsSource="{Binding Diffs}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column"
+              GridLinesVisibility="Horizontal" MaxHeight="180" Margin="12,8,12,0">
+      <DataGrid.Columns>
+        <DataGridTextColumn Header="Repository" Binding="{Binding Repo, x:DataType=vm:DiffRow}" Width="260" />
+        <DataGridTextColumn Header="Base" Binding="{Binding Base, x:DataType=vm:DiffRow}" Width="200" />
+        <DataGridTextColumn Header="Files" Binding="{Binding Files, x:DataType=vm:DiffRow}" Width="90" />
+        <DataGridTextColumn Header="Commits" Binding="{Binding Commits, x:DataType=vm:DiffRow}" Width="90" />
+      </DataGrid.Columns>
+    </DataGrid>
+
+    <DataGrid ItemsSource="{Binding Findings}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column"
+              GridLinesVisibility="Horizontal" CanUserSortColumns="True" Margin="12,8,12,8">
+      <DataGrid.Columns>
+        <DataGridTemplateColumn Header="Severity" Width="105" SortMemberPath="Severity">
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate x:DataType="vm:FindingRow">
+              <Border Classes="sev" Classes.critical="{Binding SeverityText, Converter={x:Static vm:TextIs.Critical}}"
+                      Classes.high="{Binding SeverityText, Converter={x:Static vm:TextIs.High}}"
+                      Classes.medium="{Binding SeverityText, Converter={x:Static vm:TextIs.Medium}}"
+                      CornerRadius="9" Padding="8,1" Margin="6,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                <TextBlock Text="{Binding SeverityText}" FontSize="11" FontWeight="Bold" Foreground="White" />
+              </Border>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTextColumn Header="For" Binding="{Binding For, x:DataType=vm:FindingRow}" Width="85" />
+        <DataGridTextColumn Header="Rule" Binding="{Binding Rule, x:DataType=vm:FindingRow}" Width="120" />
+        <DataGridTextColumn Header="Repository" Binding="{Binding Repo, x:DataType=vm:FindingRow}" Width="200" />
+        <DataGridTemplateColumn Header="Case (VI) / what was found" Width="*">
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate x:DataType="vm:FindingRow">
+              <StackPanel Margin="8,4">
+                <TextBlock Text="{Binding Title}" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding What}" TextWrapping="Wrap" Opacity="0.6" FontSize="12" />
+              </StackPanel>
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTextColumn Header="Where" Binding="{Binding Where, x:DataType=vm:FindingRow}" Width="240" />
+      </DataGrid.Columns>
+    </DataGrid>
+  </DockPanel>
+
+  <UserControl.Styles>
+    <Style Selector="Border.sev">
+      <Setter Property="Background" Value="#6E7781" />
+    </Style>
+    <Style Selector="Border.sev.critical">
+      <Setter Property="Background" Value="#8B0000" />
+    </Style>
+    <Style Selector="Border.sev.high">
+      <Setter Property="Background" Value="#CF222E" />
+    </Style>
+    <Style Selector="Border.sev.medium">
+      <Setter Property="Background" Value="#BC4C00" />
+    </Style>
+  </UserControl.Styles>
+</UserControl>

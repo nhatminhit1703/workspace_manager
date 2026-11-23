@@ -55,6 +55,7 @@ public static class AppHost
         builder.Services.AddSingleton<ISyncService, SyncService>();
         builder.Services.AddSingleton<IRepoInsightReader, RepoInsightReader>();
         builder.Services.AddSingleton<ISetupService, SetupService>();
+        builder.Services.AddSingleton<IBranchDiffReader, BranchDiffReader>();
         builder.Services.AddSingleton<NavigatorProxy>();
         builder.Services.AddSingleton<INavigator>(sp => sp.GetRequiredService<NavigatorProxy>());
         builder.Services.AddSingleton<IAiKeyStore>(sp => new AiKeyStore(sp.GetService<ISecretStore>()));

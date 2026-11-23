@@ -31,6 +31,9 @@ public sealed class AppSettings
     /// <summary>Repositories the workspace should contain (name + clone URL), for cloning on a new machine.</summary>
     public List<RepoEntry> RepoList { get; set; } = [];
 
+    /// <summary>Extra regex of hosts the bug hunt reports as hard-coded (staging servers...).</summary>
+    public string? BugHuntExtraHostPattern { get; set; }
+
     /// <summary>True once the settings of the old PowerShell tool were looked at.</summary>
     public bool LegacyImportDone { get; set; }
 }
