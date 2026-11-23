@@ -1,0 +1,19 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+TestResults/
+artifacts/
+
+# Local configuration and secrets (never commit)
+workspace.json
+*.local.json
+.env
+.env.*
+
+# Misc
+*.log
+*.tmp
+.vscode/
