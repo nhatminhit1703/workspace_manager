@@ -18,6 +18,8 @@
 | 5 | Đa repo hay AI trước | **Làm cả hai**, xen kẽ | Phase 3 |
 | 6 | Hosting | **GitHub là chính**, không tích hợp Git server khác | PR / issue / CI chỉ với GitHub. Fetch / pull / push vẫn chạy với mọi remote |
 | 7 | Repo source | **Public** trên GitHub | Không có dữ liệu nội bộ trong source (mục 6.1); auto-update đọc GitHub Releases không cần token |
+| 8 | License | **MIT** | File `LICENSE` ở gốc repo |
+| 9 | Ticket | **GitHub Issues** (+ GitHub Projects làm kanban) | Ticket view gom theo số issue; cần đăng nhập GitHub sớm hơn (Phase 3) |
 
 ## 1. Hiện trạng (bản PowerShell, sẽ bị thay thế)
 
@@ -168,7 +170,7 @@ Nguồn: **F** = Fork, **S** = SourceTree, **$** = chỉ có ở bản trả ph�
 | PM report, AI report, bug hunt PCL (viết lại bằng C#) | WM | P0 | 0 |
 | **PM Dashboard**: KPI, việc cần làm, rủi ro, hoạt động, lịch sử theo ngày | WM | P0 | 0 |
 | Tạo branch / commit / push / tạo PR **cùng lúc trên nhiều repo** | WM, $ (GitKraken Workspaces) | P0 | 3 |
-| **Ticket / feature view**: gom branch, commit, PR theo mã ticket xuyên repo | WM | P1 | 3 |
+| **Ticket view**: gom branch, commit, PR theo **GitHub Issue** xuyên repo. Liên kết qua tên branch có số issue (`feature/42-...`) và `#42` / `owner/repo#42` trong commit message; repo không ở GitHub thì cấu hình một repo GitHub chứa issue | WM | P1 | 3 |
 | Tìm commit / code xuyên nhiều repo | $ (GitKraken) | P1 | 3 |
 | Workspace profiles (bộ repo + branch mặc định theo dự án) | $ (GitKraken) | P2 | 3 |
 | Báo cáo tuần / tháng, xu hướng | WM | P2 | 5 |
@@ -180,7 +182,7 @@ Nguồn: **F** = Fork, **S** = SourceTree, **$** = chỉ có ở bản trả ph�
 | Xem / tạo / review PR, comment trên diff, merge PR | $ (GitKraken, Tower) | P1 | 4 |
 | Trạng thái GitHub Actions / checks trên commit và PR | $ | P1 | 4 |
 | **Launchpad**: PR của tôi, PR cần tôi review, issue được giao, gom mọi repo | $ (GitKraken) | P1 | 4 |
-| GitHub Issues + Projects: ticket, kanban cho PM | $ | P1 | 4 |
+| GitHub Issues + Projects: **nơi quản lý ticket chính**, tạo / sửa / gán issue, kanban cho PM | $ | P0 | 3–4 |
 | Avatar tác giả | F S | P3 | 4 |
 
 ### 4.7 AI (bản trả phí)
@@ -218,7 +220,7 @@ Nguồn: **F** = Fork, **S** = SourceTree, **$** = chỉ có ở bản trả ph�
 | **0. Nền móng + thay bản PowerShell** | Solution, CI (Windows + Ubuntu), chuẩn source (mục 6); git engine + parser; shell Avalonia, cơ chế module / role / profile; `Platform` cho Windows; **module PM**: grid repo, fetch / checkout / pull hàng loạt, PM report, AI report, bug hunt PCL, PM Dashboard; màn hình "Thiết lập lần đầu" (clone repo còn thiếu, git identity); migrate cấu hình + Gemini key bản PowerShell; bộ cài + auto-update Velopack; **xoá `*.ps1`, `*.bat`** | 5 | Làm được mọi việc bản PowerShell làm; số liệu grid khớp bản cũ; cài trên máy Windows sạch < 2 phút |
 | **1. Git client cơ bản** | 4.1, 4.2 (trừ GPG / composer / patch / image), 4.3 (trừ reflog / bisect), 4.4 phần P0 trừ merge / rebase | 4–5 | Làm việc cả ngày bằng app: graph, stage từng dòng, commit, push, stash, blame. Graph repo lớn nhất cuộn mượt |
 | **2. Git nâng cao** | Merge / rebase / cherry-pick / reset kéo thả, interactive rebase, conflict 3 chiều, Undo + backup ref, reflog, so sánh, worktree, submodule, LFS, git-flow, patch, image diff, custom command, Quick Launch | 4–5 | Ngang Fork. Rebase có conflict trên repo mẫu chạy đúng, Undo khôi phục được |
-| **3. Đa repo + AI (xen kẽ)** | Tuần lẻ: đa repo. Tuần chẵn: AI. Thứ tự: thao tác hàng loạt → AI commit message → ticket view → AI review trước push → tìm xuyên repo → mô tả PR / changelog → profiles → hỏi đáp workspace | 5 | Tạo branch cùng tên trên 4 repo bằng 1 thao tác; AI commit message đúng format; ticket view khớp dữ liệu thật |
+| **3. Đa repo + AI (xen kẽ)** | Tuần lẻ: đa repo. Tuần chẵn: AI. Thứ tự: thao tác hàng loạt → AI commit message → đăng nhập GitHub + đọc Issues (làm sớm một phần Phase 4) → ticket view → AI review trước push → tìm xuyên repo → mô tả PR / changelog → profiles → hỏi đáp workspace | 5 | Tạo branch cùng tên trên 4 repo bằng 1 thao tác; AI commit message đúng format; ticket view khớp dữ liệu thật |
 | **4. GitHub** | 4.6 | 3–4 | Tạo PR và review từ app; Launchpad hiện đúng PR đang mở |
 | **5. Hoàn thiện cho PM** | Dashboard tuỳ biến (widget), báo cáo tuần / tháng, xuất báo cáo, thông báo hệ điều hành | 2 | Báo cáo tuần tự sinh mỗi thứ Hai |
 | **6. Nhóm + vai trò mới** | 4.8; bật cơ chế quyền; module **Developer**, **Reviewer**; GPG / SSH signing; commit composer; stacked branches | 4 | Đổi role Developer / Reviewer được; cảnh báo conflict đúng |
@@ -247,7 +249,7 @@ Nếu cần Mac sớm hơn, Phase 7 có thể chuyển lên ngay sau Phase 2 (v�
 - **Test**: bắt buộc cho Git, Core, Reports; coverage ≥ 70% các project không phải UI.
 - **Tài liệu**: `docs/adr/` (001-avalonia-dotnet10, 002-git-cli-engine, 003-module-role, 004-no-internal-data-in-public-repo,
   005-windows-first-macos-later); `docs/user-guide/`; README hướng dẫn build.
-- **License**: chọn license cho repo public (đề xuất MIT); chỉ dùng thư viện MIT / Apache / BSD.
+- **License**: MIT (file `LICENSE`); chỉ dùng thư viện có license tương thích (MIT / Apache-2.0 / BSD), không dùng GPL.
 
 ## 7. Kiểm thử
 
@@ -301,5 +303,4 @@ Bản PowerShell **không nằm trong repo public này** (đã gỡ ngày 2026-1
 
 ## 11. Còn cần chốt
 
-1. Ticket: giữ hệ thống ticket bên ngoài (mã kiểu `YYYYMM.NNN`, cấu hình được) hay chuyển sang GitHub Issues? Ảnh hưởng ticket view ở Phase 3.
-2. License của repo: MIT?
+Không còn câu hỏi mở. Các quyết định nằm ở mục 0; quyết định mới phát sinh sẽ ghi vào `docs/adr/`.
