@@ -11,10 +11,35 @@ public sealed record GitResult(int ExitCode, string StandardOutput, string Stand
     public bool Success => ExitCode == 0;
 }
 
+/// <summary>Per-command options.</summary>
+public sealed record GitCommandOptions
+{
+    /// <summary>Read-only command, no network: the default.</summary>
+    public static GitCommandOptions Default { get; } = new();
+
+    /// <summary>Network command (fetch, pull, push): longer timeout, the credential manager may show its login window.</summary>
+    public static GitCommandOptions Network { get; } = new() { Timeout = TimeSpan.FromMinutes(10), AllowCredentialUi = true };
+
+    /// <summary>Overrides <see cref="GitRunnerOptions.Timeout"/>.</summary>
+    public TimeSpan? Timeout { get; init; }
+
+    /// <summary>Lets Git Credential Manager show its own login window. Terminal prompts stay disabled.</summary>
+    public bool AllowCredentialUi { get; init; }
+}
+
 public interface IGitRunner
 {
     /// <summary>Runs <c>git &lt;arguments&gt;</c> in <paramref name="workingDirectory"/>. Throws only when git cannot be started or on cancel / timeout.</summary>
-    Task<GitResult> RunAsync(string workingDirectory, IReadOnlyList<string> arguments, CancellationToken cancellationToken = default);
+    Task<GitResult> RunAsync(string workingDirectory, IReadOnlyList<string> arguments, GitCommandOptions? commandOptions = null, CancellationToken cancellationToken = default);
+}
+
+public static class GitRunnerExtensions
+{
+    public static Task<GitResult> RunAsync(this IGitRunner git, string workingDirectory, IReadOnlyList<string> arguments, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(git);
+        return git.RunAsync(workingDirectory, arguments, null, cancellationToken);
+    }
 }
 
 public sealed class GitRunnerOptions
@@ -41,9 +66,11 @@ public sealed class GitRunner(GitRunnerOptions options, ILogger<GitRunner>? logg
     {
     }
 
-    public async Task<GitResult> RunAsync(string workingDirectory, IReadOnlyList<string> arguments, CancellationToken cancellationToken = default)
+    public async Task<GitResult> RunAsync(string workingDirectory, IReadOnlyList<string> arguments, GitCommandOptions? commandOptions = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(arguments);
+        var cmd = commandOptions ?? GitCommandOptions.Default;
+        var limit = cmd.Timeout ?? options.Timeout;
         var psi = new ProcessStartInfo(options.GitExecutable)
         {
             WorkingDirectory = workingDirectory,
@@ -66,7 +93,7 @@ public sealed class GitRunner(GitRunnerOptions options, ILogger<GitRunner>? logg
 
         psi.Environment["LC_ALL"] = "C";
         psi.Environment["GIT_TERMINAL_PROMPT"] = "0";
-        psi.Environment["GCM_INTERACTIVE"] = "never";
+        psi.Environment["GCM_INTERACTIVE"] = cmd.AllowCredentialUi ? "auto" : "never";
         psi.Environment["GIT_OPTIONAL_LOCKS"] = "0";
         psi.Environment["GIT_PAGER"] = "cat";
         foreach (var (k, v) in options.Environment)
@@ -74,7 +101,7 @@ public sealed class GitRunner(GitRunnerOptions options, ILogger<GitRunner>? logg
             psi.Environment[k] = v;
         }
 
-        using var timeout = new CancellationTokenSource(options.Timeout);
+        using var timeout = new CancellationTokenSource(limit);
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeout.Token);
         var sw = Stopwatch.StartNew();
         using var process = new Process { StartInfo = psi };
@@ -98,7 +125,7 @@ public sealed class GitRunner(GitRunnerOptions options, ILogger<GitRunner>? logg
             TryKill(process);
             if (timeout.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
             {
-                throw new TimeoutException($"git {string.Join(' ', arguments)} did not finish within {options.Timeout.TotalSeconds:0} s.");
+                throw new TimeoutException($"git {string.Join(' ', arguments)} did not finish within {limit.TotalSeconds:0} s.");
             }
 
             throw;

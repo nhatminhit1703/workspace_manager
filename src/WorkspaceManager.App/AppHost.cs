@@ -46,6 +46,8 @@ public static class AppHost
         builder.Services.AddSingleton<IGitRunner, GitRunner>();
         builder.Services.AddSingleton<IRepoStatusReader, RepoStatusReader>();
         builder.Services.AddSingleton<IWorkspaceScanner, WorkspaceScanner>();
+        builder.Services.AddSingleton<IRepoLocks, RepoLocks>();
+        builder.Services.AddSingleton<ISyncService, SyncService>();
 
         var role = BuiltInRoles.ProjectManager;
         var modules = AllModules().Where(m => role.ModuleIds.Contains(m.Id)).ToList();

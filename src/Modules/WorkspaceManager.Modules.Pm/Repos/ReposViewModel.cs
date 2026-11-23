@@ -17,6 +17,7 @@ public sealed partial class ReposViewModel : ObservableObject, IPage
 
     private readonly IWorkspaceScanner _scanner;
     private readonly IRepoStatusReader _reader;
+    private readonly ISyncService _sync;
     private readonly ISettingsStore _settingsStore;
     private readonly IDialogService _dialogs;
     private readonly IPlatformService _platform;
@@ -30,6 +31,9 @@ public sealed partial class ReposViewModel : ObservableObject, IPage
 
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(RefreshCommand))]
+    [NotifyCanExecuteChangedFor(nameof(FetchCommand))]
+    [NotifyCanExecuteChangedFor(nameof(CheckoutAndPullCommand))]
+    [NotifyCanExecuteChangedFor(nameof(PullCurrentCommand))]
     private bool _isBusy;
 
     [ObservableProperty]
@@ -44,6 +48,7 @@ public sealed partial class ReposViewModel : ObservableObject, IPage
     public ReposViewModel(
         IWorkspaceScanner scanner,
         IRepoStatusReader reader,
+        ISyncService sync,
         ISettingsStore settingsStore,
         IDialogService dialogs,
         IPlatformService platform,
@@ -52,12 +57,17 @@ public sealed partial class ReposViewModel : ObservableObject, IPage
     {
         _scanner = scanner;
         _reader = reader;
+        _sync = sync;
         _settingsStore = settingsStore;
         _dialogs = dialogs;
         _platform = platform;
         _logger = logger;
         _time = time ?? TimeProvider.System;
-        WorkspaceRoot = settingsStore.Load().WorkspaceRoot;
+        var settings = settingsStore.Load();
+        WorkspaceRoot = settings.WorkspaceRoot;
+        SyncBranch = settings.SyncBranch;
+        SyncStash = settings.SyncStash;
+        SyncKeepCurrentBranch = settings.SyncKeepCurrentBranch;
     }
 
     public ObservableCollection<RepoRowViewModel> Repos { get; } = [];
@@ -98,6 +108,8 @@ public sealed partial class ReposViewModel : ObservableObject, IPage
 
             var now = _time.GetLocalNow();
             _all = statuses.Select(s => new RepoRowViewModel(s, now) { IsSelected = keep.Contains(s.Name) }).ToList();
+            UpdateBranchSuggestions();
+            UpdateTargetBranchColumn();
             ApplyFilter();
             StatusText = Summary();
         }
@@ -141,6 +153,7 @@ public sealed partial class ReposViewModel : ObservableObject, IPage
                 "none" => false,
                 "changes" => r.HasChanges,
                 "behind" => r.IsBehind,
+                "has-branch" => r.HasTargetBranch,
                 _ => true,
             };
         }

@@ -35,16 +35,21 @@ public static class RelativeTime
 
         if (span < TimeSpan.FromDays(60))
         {
-            return Plural((int)span.TotalDays, "days");
+            return Plural((int)span.TotalDays, "day");
         }
 
         if (span < TimeSpan.FromDays(730))
         {
-            return Plural((int)(span.TotalDays / 30.4), "months");
+            return Plural((int)(span.TotalDays / 30.4), "month");
         }
 
-        return Plural((int)(span.TotalDays / 365.25), "years");
+        return Plural((int)(span.TotalDays / 365.25), "year");
     }
 
-    private static string Plural(int n, string unit) => string.Create(CultureInfo.InvariantCulture, $"{n} {unit} ago");
+    /// <summary>"1 day ago", "2 days ago"; units "min" and "h" are abbreviations and never take an "s".</summary>
+    private static string Plural(int n, string unit)
+    {
+        var s = n == 1 || unit is "min" or "h" ? unit : unit + "s";
+        return string.Create(CultureInfo.InvariantCulture, $"{n} {s} ago");
+    }
 }

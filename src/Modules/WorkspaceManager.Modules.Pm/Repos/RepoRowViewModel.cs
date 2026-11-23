@@ -10,6 +10,10 @@ public sealed partial class RepoRowViewModel : ObservableObject
     [ObservableProperty]
     private bool _isSelected;
 
+    /// <summary>origin has the branch typed in the branch box.</summary>
+    [ObservableProperty]
+    private bool _hasTargetBranch;
+
     public RepoRowViewModel(RepoStatus status, DateTimeOffset now)
     {
         ArgumentNullException.ThrowIfNull(status);

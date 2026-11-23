@@ -42,12 +42,40 @@ internal sealed class MemorySettings(AppSettings? initial = null) : ISettingsSto
         SelectedRepos = [.. s.SelectedRepos],
         ActiveRoleId = s.ActiveRoleId,
         LegacyImportDone = s.LegacyImportDone,
+        SyncBranch = s.SyncBranch,
+        SyncStash = s.SyncStash,
+        SyncKeepCurrentBranch = s.SyncKeepCurrentBranch,
     };
 }
 
-internal sealed class FakeDialogs(string? folder) : IDialogService
+internal sealed class FakeDialogs(string? folder, bool confirm = true) : IDialogService
 {
+    public List<string> Questions { get; } = [];
+
     public Task<string?> PickFolderAsync(string title, string? startFolder = null) => Task.FromResult(folder);
+
+    public Task<bool> ConfirmAsync(string title, string message)
+    {
+        Questions.Add(message);
+        return Task.FromResult(confirm);
+    }
+}
+
+internal sealed class FakeSync : ISyncService
+{
+    public List<(SyncRequest Request, IReadOnlyList<string> Paths)> Runs { get; } = [];
+
+    public Task<IReadOnlyList<SyncResult>> RunAsync(SyncRequest request, IReadOnlyList<string> repoPaths, IProgress<SyncResult>? progress = null, CancellationToken cancellationToken = default)
+    {
+        Runs.Add((request, repoPaths));
+        var results = repoPaths.Select(p => new SyncResult(Path.GetFileName(p), SyncOutcome.Updated, "updated", "main", "a1", "b2")).ToList();
+        foreach (var r in results)
+        {
+            progress?.Report(r);
+        }
+
+        return Task.FromResult<IReadOnlyList<SyncResult>>(results);
+    }
 }
 
 internal sealed class FakePlatform : IPlatformService
@@ -92,6 +120,7 @@ internal static class Make
         IRepoStatusReader reader,
         MemorySettings settings,
         IDialogService? dialogs = null,
-        FakePlatform? platform = null) =>
-        new(scanner, reader, settings, dialogs ?? new FakeDialogs(null), platform ?? new FakePlatform(), NullLogger<ReposViewModel>.Instance, new FixedTime(Now));
+        FakePlatform? platform = null,
+        ISyncService? sync = null) =>
+        new(scanner, reader, sync ?? new FakeSync(), settings, dialogs ?? new FakeDialogs(null), platform ?? new FakePlatform(), NullLogger<ReposViewModel>.Instance, new FixedTime(Now));
 }

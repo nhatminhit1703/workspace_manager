@@ -5,7 +5,7 @@
              x:DataType="vm:ReposViewModel">
 
   <DockPanel>
-    <!-- Toolbar -->
+    <!-- Toolbar: workspace, filter, refresh -->
     <Border DockPanel.Dock="Top" Padding="12,10" BorderThickness="0,0,0,1"
             BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
       <Grid ColumnDefinitions="Auto,*,Auto">
@@ -17,18 +17,33 @@
         </StackPanel>
         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8">
           <TextBox Text="{Binding Filter}" PlaceholderText="Filter repo or branch" Width="220" />
-          <Button Content="Refresh" Command="{Binding RefreshCommand}" HotKey="F5" Classes="accent" />
+          <Button Content="Refresh" Command="{Binding RefreshCommand}" HotKey="F5" />
         </StackPanel>
       </Grid>
     </Border>
 
+    <!-- Bulk operations on the ticked repositories -->
+    <WrapPanel DockPanel.Dock="Top" Margin="12,8,12,0" IsVisible="{Binding HasWorkspace}">
+      <TextBlock Text="Branch:" VerticalAlignment="Center" Opacity="0.7" Margin="0,0,6,0" />
+      <AutoCompleteBox Text="{Binding SyncBranch}" ItemsSource="{Binding BranchSuggestions}"
+                       FilterMode="Contains" MinimumPrefixLength="0" MaxDropDownHeight="360" Width="380"
+                       ToolTip.Tip="auto = production, else master, else main | current = each repository's branch | or any branch name" />
+      <CheckBox Content="Stash local changes" IsChecked="{Binding SyncStash}" Margin="12,0,0,0" />
+      <CheckBox Content="Keep current branch (update ref only)" IsChecked="{Binding SyncKeepCurrentBranch}" Margin="8,0,0,0" />
+      <Button Content="Fetch" Command="{Binding FetchCommand}" Margin="12,0,0,0" />
+      <Button Content="Checkout + Pull" Command="{Binding CheckoutAndPullCommand}" Classes="accent" Margin="6,0,0,0" />
+      <Button Content="Pull current branch" Command="{Binding PullCurrentCommand}" Margin="6,0,0,0" />
+    </WrapPanel>
+
     <!-- Selection helpers -->
-    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="6" Margin="12,8,12,0">
+    <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Spacing="6" Margin="12,8,12,0" IsVisible="{Binding HasWorkspace}">
       <TextBlock Text="Select:" VerticalAlignment="Center" Opacity="0.7" />
       <Button Content="All" Command="{Binding SelectAllCommand}" CommandParameter="all" />
       <Button Content="None" Command="{Binding SelectAllCommand}" CommandParameter="none" />
       <Button Content="With changes" Command="{Binding SelectAllCommand}" CommandParameter="changes" />
       <Button Content="Behind upstream" Command="{Binding SelectAllCommand}" CommandParameter="behind" />
+      <Button Content="Having the branch" Command="{Binding SelectAllCommand}" CommandParameter="has-branch"
+              IsEnabled="{Binding IsNamedBranch}" />
     </StackPanel>
 
     <!-- Status bar -->
@@ -38,6 +53,35 @@
         <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Width="100" />
         <TextBlock Text="{Binding StatusText}" VerticalAlignment="Center" />
       </StackPanel>
+    </Border>
+
+    <!-- Operation log -->
+    <Border DockPanel.Dock="Bottom" Height="140" Margin="12,0,12,6" CornerRadius="4" Padding="8,4"
+            Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" IsVisible="{Binding HasWorkspace}">
+      <DockPanel>
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto">
+          <TextBlock Text="Log" FontWeight="SemiBold" Opacity="0.7" VerticalAlignment="Center" />
+          <Button Grid.Column="1" Content="Clear" Command="{Binding ClearLogCommand}" Padding="8,2" FontSize="11" />
+        </Grid>
+        <ScrollViewer x:Name="LogScroll">
+          <ItemsControl ItemsSource="{Binding Log}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="vm:SyncLogLine">
+                <TextBlock FontFamily="Cascadia Mono, Consolas, Menlo, monospace" FontSize="12" TextWrapping="Wrap"
+                           Classes.fail="{Binding Kind, Converter={x:Static vm:KindIs.Fail}}"
+                           Classes.skip="{Binding Kind, Converter={x:Static vm:KindIs.Skip}}"
+                           Classes.ok="{Binding Kind, Converter={x:Static vm:KindIs.Ok}}">
+                  <Run Text="{Binding Time}" Foreground="Gray" />
+                  <Run Text=" " />
+                  <Run Text="{Binding Repo}" FontWeight="SemiBold" />
+                  <Run Text=" " />
+                  <Run Text="{Binding Message}" />
+                </TextBlock>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </ScrollViewer>
+      </DockPanel>
     </Border>
 
     <!-- Empty state -->
@@ -66,7 +110,7 @@
             </DataTemplate>
           </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>
-        <DataGridTemplateColumn Header="Repository" Width="260" MinWidth="160" SortMemberPath="Name">
+        <DataGridTemplateColumn Header="Repository" Width="230" MinWidth="150" SortMemberPath="Name">
           <DataGridTemplateColumn.CellTemplate>
             <DataTemplate x:DataType="vm:RepoRowViewModel">
               <TextBlock Text="{Binding Name}" VerticalAlignment="Center" Margin="8,0" TextTrimming="CharacterEllipsis"
@@ -91,7 +135,7 @@
             </DataTemplate>
           </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>
-        <DataGridTemplateColumn Header="vs upstream" Width="150" SortMemberPath="Sync">
+        <DataGridTemplateColumn Header="vs upstream" Width="140" SortMemberPath="Sync">
           <DataGridTemplateColumn.CellTemplate>
             <DataTemplate x:DataType="vm:RepoRowViewModel">
               <TextBlock Text="{Binding Sync}" VerticalAlignment="Center" Margin="8,0"
@@ -99,8 +143,15 @@
             </DataTemplate>
           </DataGridTemplateColumn.CellTemplate>
         </DataGridTemplateColumn>
-        <DataGridTextColumn Header="Last commit" Binding="{Binding LastCommit, x:DataType=vm:RepoRowViewModel}" Width="140" IsReadOnly="True" />
-        <DataGridTextColumn Header="Last fetch" Binding="{Binding LastFetch, x:DataType=vm:RepoRowViewModel}" Width="150" IsReadOnly="True" />
+        <DataGridTemplateColumn Header="Has branch" Width="110" SortMemberPath="HasTargetBranch">
+          <DataGridTemplateColumn.CellTemplate>
+            <DataTemplate x:DataType="vm:RepoRowViewModel">
+              <TextBlock Text="yes" IsVisible="{Binding HasTargetBranch}" Classes="has" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            </DataTemplate>
+          </DataGridTemplateColumn.CellTemplate>
+        </DataGridTemplateColumn>
+        <DataGridTextColumn Header="Last commit" Binding="{Binding LastCommit, x:DataType=vm:RepoRowViewModel}" Width="120" IsReadOnly="True" />
+        <DataGridTextColumn Header="Last fetch" Binding="{Binding LastFetch, x:DataType=vm:RepoRowViewModel}" Width="140" IsReadOnly="True" />
       </DataGrid.Columns>
     </DataGrid>
   </DockPanel>
@@ -112,8 +163,14 @@
     <Style Selector="TextBlock.behind">
       <Setter Property="Foreground" Value="#D9480F" />
     </Style>
-    <Style Selector="TextBlock.error">
+    <Style Selector="TextBlock.error, TextBlock.fail">
       <Setter Property="Foreground" Value="#E03131" />
+    </Style>
+    <Style Selector="TextBlock.skip">
+      <Setter Property="Foreground" Value="#B08800" />
+    </Style>
+    <Style Selector="TextBlock.ok, TextBlock.has">
+      <Setter Property="Foreground" Value="#2F9E44" />
     </Style>
     <Style Selector="TextBlock.ahead">
       <Setter Property="FontWeight" Value="Bold" />

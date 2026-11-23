@@ -30,8 +30,16 @@ public static class LegacySettingsImporter
         try
         {
             using var doc = JsonDocument.Parse(File.ReadAllText(legacyStateFile));
+            var root = doc.RootElement;
+            if (root.TryGetProperty("Branch", out var branch) && branch.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(branch.GetString()))
+            {
+                settings.SyncBranch = branch.GetString()!;
+            }
+
+            settings.SyncStash = root.TryGetProperty("Stash", out var stash) && stash.ValueKind == JsonValueKind.True;
+            settings.SyncKeepCurrentBranch = root.TryGetProperty("Keep", out var keep) && keep.ValueKind == JsonValueKind.True;
             if (settings.SelectedRepos.Count == 0
-                && doc.RootElement.TryGetProperty("Repos", out var repos)
+                && root.TryGetProperty("Repos", out var repos)
                 && repos.ValueKind == JsonValueKind.Array)
             {
                 settings.SelectedRepos = repos.EnumerateArray()

@@ -144,6 +144,8 @@ public class RepoRowTests
     [InlineData(60 * 24 * 12, "12 days ago")]
     [InlineData(60 * 24 * 120, "3 months ago")]
     [InlineData(60 * 24 * 800, "2 years ago")]
+    [InlineData(60 * 24 * 61, "2 months ago")]
+    [InlineData(60 * 24 * 400, "1 year ago")]
     public void Relative_time(double minutesAgo, string expected) =>
         RelativeTime.Format(Make.Now.AddMinutes(-minutesAgo), Make.Now).Should().Be(expected);
 }
