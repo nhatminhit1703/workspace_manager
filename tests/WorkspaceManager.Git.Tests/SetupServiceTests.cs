@@ -50,7 +50,7 @@ public sealed class SetupServiceTests : IDisposable
     }
 
     [Fact]
-    public async Task Reads_and_writes_the_global_identity()
+    public async Task Reads_and_writes_the_user_identity()
     {
         var s = Service();
         (await s.GitVersionAsync(TestContext.Current.CancellationToken)).Should().StartWith("git version");
