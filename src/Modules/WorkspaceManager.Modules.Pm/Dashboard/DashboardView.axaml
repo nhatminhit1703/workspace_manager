@@ -1,0 +1,176 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WorkspaceManager.Modules.Pm.Dashboard"
+             xmlns:rep="using:WorkspaceManager.Core.Reports"
+             xmlns:report="using:WorkspaceManager.Modules.Pm.Report"
+             xmlns:repos="using:WorkspaceManager.Modules.Pm.Repos"
+             x:Class="WorkspaceManager.Modules.Pm.Dashboard.DashboardView"
+             x:DataType="vm:DashboardViewModel">
+
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Padding="12,10" BorderThickness="0,0,0,1"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+      <WrapPanel>
+        <TextBlock Text="Dashboard" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,16,0" />
+        <Button Content="Refresh" Command="{Binding RefreshCommand}" HotKey="F5" />
+        <Button Content="Fetch all" Command="{Binding FetchAllCommand}" Margin="6,0,0,0" />
+        <Button Content="Repositories" Command="{Binding OpenCommand}" CommandParameter="pm.repos" Margin="16,0,0,0" />
+        <Button Content="PM Report" Command="{Binding OpenCommand}" CommandParameter="pm.report" Margin="6,0,0,0" />
+        <Button Content="AI Report" Command="{Binding OpenCommand}" CommandParameter="pm.ai" Margin="6,0,0,0" />
+        <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Width="100" Margin="12,0,0,0" />
+      </WrapPanel>
+    </Border>
+
+    <Border DockPanel.Dock="Bottom" Padding="12,6" BorderThickness="0,1,0,0"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+      <TextBlock Text="{Binding StatusText}" />
+    </Border>
+
+    <ScrollViewer>
+      <Grid ColumnDefinitions="3*,2*" Margin="12">
+        <StackPanel Spacing="12" Margin="0,0,12,0">
+          <!-- Setup checklist -->
+          <Border Classes="card" IsVisible="{Binding NeedsSetup}">
+            <StackPanel Spacing="8">
+              <TextBlock Classes="h2" Text="Set up this machine" />
+              <ItemsControl ItemsSource="{Binding Setup}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="vm:SetupItem">
+                    <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2">
+                      <TextBlock Text="{Binding Mark}" Width="40" FontWeight="Bold" Classes.ok="{Binding Done}" Classes.todo="{Binding !Done}" />
+                      <TextBlock Text="{Binding Text}" TextWrapping="Wrap" />
+                    </StackPanel>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+              <WrapPanel>
+                <Button Content="Choose workspace folder..." Command="{Binding ChooseWorkspaceCommand}" Margin="0,0,6,6" />
+                <Button Content="Set git identity..." Command="{Binding SetIdentityCommand}" Margin="0,0,6,6" />
+                <Button Content="Import Gemini key from .env..." Command="{Binding ImportGeminiKeyCommand}" Margin="0,0,6,6" />
+              </WrapPanel>
+              <TextBlock Text="Repository list (one per line: name | clone URL). Saved on this machine only." Opacity="0.7" FontSize="12" />
+              <TextBox Text="{Binding RepoListText}" AcceptsReturn="True" Height="110" FontFamily="Cascadia Mono, Consolas, Menlo, monospace" FontSize="12"
+                       PlaceholderText="api | https://example.com/team/api.git" />
+              <StackPanel Orientation="Horizontal" Spacing="6">
+                <Button Content="Save list" Command="{Binding SaveRepoListCommand}" />
+                <Button Content="Clone missing repositories" Command="{Binding CloneMissingCommand}" Classes="accent" />
+              </StackPanel>
+            </StackPanel>
+          </Border>
+
+          <!-- KPIs -->
+          <ItemsControl ItemsSource="{Binding Kpis}" IsVisible="{Binding HasReport}">
+            <ItemsControl.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel />
+              </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="rep:ReportKpi">
+                <Border Width="150" Margin="0,0,8,8" Padding="10,8" CornerRadius="6" BorderThickness="1"
+                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+                  <StackPanel>
+                    <TextBlock Text="{Binding Value}" FontSize="24" FontWeight="Bold"
+                               Classes.warn="{Binding Tone, Converter={x:Static report:ToneIs.Warning}}"
+                               Classes.bad="{Binding Tone, Converter={x:Static report:ToneIs.Bad}}" />
+                    <TextBlock Text="{Binding Name}" Opacity="0.7" FontSize="12" TextWrapping="Wrap" />
+                  </StackPanel>
+                </Border>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+
+          <!-- Top action items -->
+          <Border Classes="card" IsVisible="{Binding HasReport}">
+            <StackPanel Spacing="6">
+              <TextBlock Classes="h2" Text="Most important now" />
+              <ItemsControl ItemsSource="{Binding Actions}">
+                <ItemsControl.ItemTemplate>
+                  <DataTemplate x:DataType="report:ActionRow">
+                    <Grid ColumnDefinitions="80,200,*" Margin="0,3">
+                      <Border Classes="level" Classes.high="{Binding Level, Converter={x:Static report:LevelIs.High}}"
+                              Classes.medium="{Binding Level, Converter={x:Static report:LevelIs.Medium}}"
+                              CornerRadius="9" Padding="8,1" HorizontalAlignment="Left" VerticalAlignment="Top">
+                        <TextBlock Text="{Binding LevelText}" FontSize="11" FontWeight="Bold" Foreground="White" />
+                      </Border>
+                      <TextBlock Grid.Column="1" Text="{Binding Repo}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+                      <TextBlock Grid.Column="2" TextWrapping="Wrap">
+                        <Run Text="{Binding Issue}" />
+                        <Run Text=" - " Foreground="Gray" />
+                        <Run Text="{Binding SuggestedAction}" Foreground="Gray" />
+                      </TextBlock>
+                    </Grid>
+                  </DataTemplate>
+                </ItemsControl.ItemTemplate>
+              </ItemsControl>
+            </StackPanel>
+          </Border>
+
+          <!-- Operation log -->
+          <ItemsControl ItemsSource="{Binding Log}">
+            <ItemsControl.ItemTemplate>
+              <DataTemplate x:DataType="repos:SyncLogLine">
+                <TextBlock FontFamily="Cascadia Mono, Consolas, Menlo, monospace" FontSize="12" TextWrapping="Wrap">
+                  <Run Text="{Binding Time}" Foreground="Gray" />
+                  <Run Text=" " />
+                  <Run Text="{Binding Repo}" FontWeight="SemiBold" />
+                  <Run Text=" " />
+                  <Run Text="{Binding Message}" />
+                </TextBlock>
+              </DataTemplate>
+            </ItemsControl.ItemTemplate>
+          </ItemsControl>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Spacing="12">
+          <Border Classes="card">
+            <StackPanel Spacing="6">
+              <TextBlock Classes="h2" Text="My work (today and yesterday)" />
+              <SelectableTextBlock Text="{Binding MyWork}" FontFamily="Cascadia Mono, Consolas, Menlo, monospace" FontSize="12" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+          <Border Classes="card">
+            <StackPanel Spacing="6">
+              <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="h2" Text="Last AI report" />
+                <Button Grid.Column="1" Content="Open" Command="{Binding OpenCommand}" CommandParameter="pm.ai" />
+              </Grid>
+              <SelectableTextBlock Text="{Binding LastAiReport}" FontSize="12" TextWrapping="Wrap" />
+            </StackPanel>
+          </Border>
+        </StackPanel>
+      </Grid>
+    </ScrollViewer>
+  </DockPanel>
+
+  <UserControl.Styles>
+    <Style Selector="Border.card">
+      <Setter Property="Padding" Value="14,10" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="BorderThickness" Value="1" />
+      <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseLowBrush}" />
+    </Style>
+    <Style Selector="TextBlock.h2">
+      <Setter Property="FontSize" Value="15" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.ok">
+      <Setter Property="Foreground" Value="#2F9E44" />
+    </Style>
+    <Style Selector="TextBlock.todo">
+      <Setter Property="Foreground" Value="#D9480F" />
+    </Style>
+    <Style Selector="TextBlock.warn">
+      <Setter Property="Foreground" Value="#D9480F" />
+    </Style>
+    <Style Selector="TextBlock.bad">
+      <Setter Property="Foreground" Value="#E03131" />
+    </Style>
+    <Style Selector="Border.level.high">
+      <Setter Property="Background" Value="#CF222E" />
+    </Style>
+    <Style Selector="Border.level.medium">
+      <Setter Property="Background" Value="#BC4C00" />
+    </Style>
+  </UserControl.Styles>
+</UserControl>

@@ -48,6 +48,7 @@ internal sealed class MemorySettings(AppSettings? initial = null) : ISettingsSto
         ReportDays = s.ReportDays,
         AiEnabled = s.AiEnabled,
         AiModel = s.AiModel,
+        RepoList = [.. s.RepoList],
     };
 }
 
@@ -82,6 +83,11 @@ internal sealed class FakeDialogs(string? folder, bool confirm = true) : IDialog
     public Task<string?> PickOpenFileAsync(string title) => Task.FromResult(OpenPath);
 
     public Task<string?> PromptSecretAsync(string title, string label) => Task.FromResult(Secret);
+
+    public Queue<string?> Texts { get; } = new();
+
+    public Task<string?> PromptTextAsync(string title, string label, string? initial = null) =>
+        Task.FromResult(Texts.Count > 0 ? Texts.Dequeue() : null);
 }
 
 internal sealed class FakeSync : ISyncService

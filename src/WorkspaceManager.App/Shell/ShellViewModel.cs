@@ -20,9 +20,11 @@ public sealed partial class ShellViewModel : ObservableObject
     [ObservableProperty]
     private object? _currentPage;
 
-    public ShellViewModel(IServiceProvider services, Role role, IReadOnlyList<IModule> modules, UpdateBannerViewModel update)
+    public ShellViewModel(IServiceProvider services, Role role, IReadOnlyList<IModule> modules, UpdateBannerViewModel update, NavigatorProxy navigator)
     {
         ArgumentNullException.ThrowIfNull(role);
+        ArgumentNullException.ThrowIfNull(navigator);
+        navigator.Shell = this;
         _services = services;
         Update = update;
         Role = role;

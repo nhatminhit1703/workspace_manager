@@ -310,9 +310,20 @@ Bản PowerShell **không nằm trong repo public này** (đã gỡ ngày 2026-1
 | ADR 001–005, CI GitHub Actions (Windows + Ubuntu, format, kiểm tra dữ liệu nội bộ) | ✅ |
 | Prototype commit graph + diff (AvaloniaEdit) | ⏳ tuần 2 |
 
+### Phase 0 – tuần 2 (2026-11-23)
+
+| Việc | Trạng thái |
+|---|---|
+| Fetch / Checkout + Pull / Pull current hàng loạt (chỉ fast-forward, stash, giữ branch hiện tại, khoá ghi theo repo, xác nhận, log màu) | ✅ 11 test git thật |
+| Bộ cài Windows + auto-update (Velopack, GitHub Releases, workflow `release.yml` khi push tag `v*`), icon riêng | ✅ đóng gói thử được Setup.exe 60 MB |
+| PM report trong app: KPI, việc cần làm, theo dõi branch, daily report, team, xuất HTML | ✅ khớp bản PowerShell (25 repo, 12 High) |
+| AI report (Gemini): key DPAPI / biến môi trường / import .env, xem trước dữ liệu gửi đi, nút tắt AI, Markdown -> HTML | ✅ gọi Gemini thật OK |
+| Hiệu năng: git không chạy trên luồng UI, tải dữ liệu sau khi mở cửa sổ, ReadyToRun | ✅ |
+| Test | ✅ 99 test |
+
 ### Phase 0 – còn lại
-Fetch / checkout / pull hàng loạt (hàng đợi lệnh theo repo, chỉ fast-forward) → PM report → AI report (Gemini, key qua `ISecretStore`)
-→ bug hunt PCL → PM Dashboard → màn hình thiết lập lần đầu → bộ cài + auto-update Velopack → bỏ hẳn bản PowerShell.
+PM Dashboard (trang chủ) + thiết lập lần đầu (chọn workspace, clone repo còn thiếu từ danh sách URL lưu local, git identity)
+→ bug hunt (luật chung, cấu hình được) → release `v0.1.0` → bỏ hẳn bản PowerShell.
 
 ## 10b. Việc làm ngay (Phase 0, tuần 1) – kế hoạch ban đầu
 

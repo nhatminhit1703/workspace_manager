@@ -79,6 +79,14 @@ public sealed partial class ReposViewModel : ObservableObject, IPage
     [RelayCommand(CanExecute = nameof(CanRefresh))]
     public async Task RefreshAsync()
     {
+        // The workspace can be changed from another page (dashboard setup).
+        var saved = _settingsStore.Load().WorkspaceRoot;
+        if (saved != WorkspaceRoot)
+        {
+            WorkspaceRoot = saved;
+            _all = [];
+        }
+
         if (!HasWorkspace)
         {
             return;

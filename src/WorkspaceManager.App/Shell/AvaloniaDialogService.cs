@@ -66,14 +66,23 @@ public sealed class AvaloniaDialogService : IDialogService
         return files.Count > 0 ? files[0].TryGetLocalPath() : null;
     }
 
-    public async Task<string?> PromptSecretAsync(string title, string label)
+    public Task<string?> PromptSecretAsync(string title, string label) => PromptAsync(title, label, null, masked: true);
+
+    public Task<string?> PromptTextAsync(string title, string label, string? initial = null) => PromptAsync(title, label, initial, masked: false);
+
+    private async Task<string?> PromptAsync(string title, string label, string? initial, bool masked)
     {
         if (Owner is null)
         {
             return null;
         }
 
-        var box = new TextBox { PasswordChar = '*', Width = 460 };
+        var box = new TextBox { Width = 460, Text = initial ?? string.Empty };
+        if (masked)
+        {
+            box.PasswordChar = '*';
+        }
+
         var ok = new Button { Content = "Save", IsDefault = true, MinWidth = 90, HorizontalContentAlignment = HorizontalAlignment.Center };
         ok.Classes.Add("accent");
         var cancel = new Button { Content = "Cancel", IsCancel = true, MinWidth = 90, HorizontalContentAlignment = HorizontalAlignment.Center };

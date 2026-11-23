@@ -1,3 +1,5 @@
+using WorkspaceManager.Core.Repositories;
+
 namespace WorkspaceManager.Core.Settings;
 
 /// <summary>Per-user settings, stored outside the repository (see IPlatformService.AppDataDirectory).</summary>
@@ -25,6 +27,9 @@ public sealed class AppSettings
     public bool AiEnabled { get; set; } = true;
 
     public string AiModel { get; set; } = "gemini-2.5-flash";
+
+    /// <summary>Repositories the workspace should contain (name + clone URL), for cloning on a new machine.</summary>
+    public List<RepoEntry> RepoList { get; set; } = [];
 
     /// <summary>True once the settings of the old PowerShell tool were looked at.</summary>
     public bool LegacyImportDone { get; set; }
@@ -55,4 +60,7 @@ public interface IDialogService
 
     /// <summary>Asks for a secret (masked input). Returns null when cancelled.</summary>
     Task<string?> PromptSecretAsync(string title, string label);
+
+    /// <summary>Asks for a line of text. Returns null when cancelled.</summary>
+    Task<string?> PromptTextAsync(string title, string label, string? initial = null);
 }

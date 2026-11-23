@@ -54,6 +54,9 @@ public static class AppHost
         builder.Services.AddSingleton<IRepoLocks, RepoLocks>();
         builder.Services.AddSingleton<ISyncService, SyncService>();
         builder.Services.AddSingleton<IRepoInsightReader, RepoInsightReader>();
+        builder.Services.AddSingleton<ISetupService, SetupService>();
+        builder.Services.AddSingleton<NavigatorProxy>();
+        builder.Services.AddSingleton<INavigator>(sp => sp.GetRequiredService<NavigatorProxy>());
         builder.Services.AddSingleton<IAiKeyStore>(sp => new AiKeyStore(sp.GetService<ISecretStore>()));
         builder.Services.AddHttpClient<IAiClient, GeminiClient>(c => c.Timeout = TimeSpan.FromMinutes(5));
 
