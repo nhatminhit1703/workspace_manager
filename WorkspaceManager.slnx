@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/WorkspaceManager.Ai/WorkspaceManager.Ai.csproj" />
     <Project Path="src/WorkspaceManager.App/WorkspaceManager.App.csproj" />
     <Project Path="src/WorkspaceManager.Core/WorkspaceManager.Core.csproj" />
     <Project Path="src/WorkspaceManager.Data/WorkspaceManager.Data.csproj" />
@@ -11,6 +12,7 @@
     <Project Path="src/Modules/WorkspaceManager.Modules.Pm/WorkspaceManager.Modules.Pm.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/WorkspaceManager.Ai.Tests/WorkspaceManager.Ai.Tests.csproj" />
     <Project Path="tests/WorkspaceManager.Git.Tests/WorkspaceManager.Git.Tests.csproj" />
     <Project Path="tests/WorkspaceManager.Modules.Pm.Tests/WorkspaceManager.Modules.Pm.Tests.csproj" />
   </Folder>

@@ -55,6 +55,52 @@ public sealed class AvaloniaDialogService : IDialogService
         }
     }
 
+    public async Task<string?> PickOpenFileAsync(string title)
+    {
+        if (Owner is null)
+        {
+            return null;
+        }
+
+        var files = await Owner.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { Title = title, AllowMultiple = false });
+        return files.Count > 0 ? files[0].TryGetLocalPath() : null;
+    }
+
+    public async Task<string?> PromptSecretAsync(string title, string label)
+    {
+        if (Owner is null)
+        {
+            return null;
+        }
+
+        var box = new TextBox { PasswordChar = '*', Width = 460 };
+        var ok = new Button { Content = "Save", IsDefault = true, MinWidth = 90, HorizontalContentAlignment = HorizontalAlignment.Center };
+        ok.Classes.Add("accent");
+        var cancel = new Button { Content = "Cancel", IsCancel = true, MinWidth = 90, HorizontalContentAlignment = HorizontalAlignment.Center };
+        var dialog = new Window
+        {
+            Title = title,
+            SizeToContent = SizeToContent.WidthAndHeight,
+            CanResize = false,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Content = new StackPanel
+            {
+                Margin = new Thickness(20),
+                Spacing = 12,
+                Children =
+                {
+                    new TextBlock { Text = label, TextWrapping = Avalonia.Media.TextWrapping.Wrap, MaxWidth = 460 },
+                    box,
+                    new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8, HorizontalAlignment = HorizontalAlignment.Right, Children = { ok, cancel } },
+                },
+            },
+        };
+        ok.Click += (_, _) => dialog.Close(box.Text);
+        cancel.Click += (_, _) => dialog.Close(null);
+        dialog.Opened += (_, _) => box.Focus();
+        return await dialog.ShowDialog<string?>(Owner);
+    }
+
     public async Task<bool> ConfirmAsync(string title, string message)
     {
         if (Owner is null)

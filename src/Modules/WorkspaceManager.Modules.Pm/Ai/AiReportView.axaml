@@ -1,0 +1,62 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WorkspaceManager.Modules.Pm.Ai"
+             x:Class="WorkspaceManager.Modules.Pm.Ai.AiReportView"
+             x:DataType="vm:AiReportViewModel">
+
+  <DockPanel>
+    <!-- Options -->
+    <Border DockPanel.Dock="Top" Padding="12,10" BorderThickness="0,0,0,1"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+      <WrapPanel>
+        <ToggleSwitch IsChecked="{Binding AiEnabled}" OnContent="AI on" OffContent="AI off" Margin="0,0,12,0" />
+        <TextBlock Text="Model:" VerticalAlignment="Center" Opacity="0.7" Margin="0,0,6,0" />
+        <AutoCompleteBox Text="{Binding Model}" ItemsSource="{Binding Models}" MinimumPrefixLength="0" FilterMode="Contains" Width="200" />
+        <Button Content="Generate" Command="{Binding GenerateCommand}" Classes="accent" Margin="12,0,0,0" />
+        <Button Content="Preview data sent" Command="{Binding PreviewCommand}" Margin="6,0,0,0" />
+        <TextBlock Text="{Binding KeyStatus}" VerticalAlignment="Center" Opacity="0.7" Margin="16,0,6,0" />
+        <Button Content="Set key..." Command="{Binding SetKeyCommand}" />
+        <Button Content="Import from .env..." Command="{Binding ImportKeyCommand}" Margin="6,0,0,0" />
+        <Button Content="Remove key" Command="{Binding RemoveKeyCommand}" Margin="6,0,0,0" />
+        <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Width="100" Margin="12,0,0,0" />
+      </WrapPanel>
+    </Border>
+
+    <Border DockPanel.Dock="Bottom" Padding="12,6" BorderThickness="0,1,0,0"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+      <TextBlock Text="{Binding StatusText}" TextTrimming="CharacterEllipsis" />
+    </Border>
+
+    <Grid ColumnDefinitions="340,6,*" Margin="12">
+      <!-- Notes -->
+      <DockPanel>
+        <TextBlock DockPanel.Dock="Top" Text="My notes (sent with the data)" FontWeight="SemiBold" Margin="0,0,0,6" />
+        <TextBlock DockPanel.Dock="Top" TextWrapping="Wrap" Opacity="0.65" FontSize="12" Margin="0,0,0,6"
+                   Text="Facts the git data does not show: blockers, test results, decisions, what you plan today." />
+        <TextBox Text="{Binding Notes}" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top" />
+      </DockPanel>
+
+      <GridSplitter Grid.Column="1" ResizeDirection="Columns" Background="Transparent" />
+
+      <!-- Result or preview -->
+      <DockPanel Grid.Column="2">
+        <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+          <TextBlock Text="Report (Markdown)" FontWeight="SemiBold" VerticalAlignment="Center" IsVisible="{Binding !HasPreview}" />
+          <TextBlock Text="Data that will be sent to the AI provider" FontWeight="SemiBold" VerticalAlignment="Center" IsVisible="{Binding HasPreview}" />
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+            <Button Content="Close preview" Command="{Binding ClosePreviewCommand}" IsVisible="{Binding HasPreview}" />
+            <Button Content="Copy" Command="{Binding CopyResultCommand}" IsEnabled="{Binding HasResult}" IsVisible="{Binding !HasPreview}" />
+            <Button Content="Open in browser" Command="{Binding OpenInBrowserCommand}" IsEnabled="{Binding HasResult}" IsVisible="{Binding !HasPreview}" />
+          </StackPanel>
+        </Grid>
+        <Panel>
+          <TextBox Text="{Binding Result}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top"
+                   FontFamily="Cascadia Mono, Consolas, Menlo, monospace" FontSize="12" IsVisible="{Binding !HasPreview}"
+                   PlaceholderText="Press Generate. The answer is saved in your app data folder." />
+          <TextBox Text="{Binding Preview}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap" VerticalContentAlignment="Top"
+                   FontFamily="Cascadia Mono, Consolas, Menlo, monospace" FontSize="12" IsVisible="{Binding HasPreview}" />
+        </Panel>
+      </DockPanel>
+    </Grid>
+  </DockPanel>
+</UserControl>

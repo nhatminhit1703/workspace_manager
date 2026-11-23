@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- AI providers behind IAiClient. Gemini first. -->
+  <ItemGroup>
+    <ProjectReference Include="..\WorkspaceManager.Core\WorkspaceManager.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+</Project>

@@ -46,6 +46,8 @@ internal sealed class MemorySettings(AppSettings? initial = null) : ISettingsSto
         SyncStash = s.SyncStash,
         SyncKeepCurrentBranch = s.SyncKeepCurrentBranch,
         ReportDays = s.ReportDays,
+        AiEnabled = s.AiEnabled,
+        AiModel = s.AiModel,
     };
 }
 
@@ -72,6 +74,14 @@ internal sealed class FakeDialogs(string? folder, bool confirm = true) : IDialog
         Clipboard = text;
         return Task.CompletedTask;
     }
+
+    public string? OpenPath { get; set; }
+
+    public string? Secret { get; set; }
+
+    public Task<string?> PickOpenFileAsync(string title) => Task.FromResult(OpenPath);
+
+    public Task<string?> PromptSecretAsync(string title, string label) => Task.FromResult(Secret);
 }
 
 internal sealed class FakeSync : ISyncService

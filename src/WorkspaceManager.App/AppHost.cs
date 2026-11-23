@@ -1,8 +1,10 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
+using WorkspaceManager.Ai;
 using WorkspaceManager.App.Shell;
 using WorkspaceManager.App.Updates;
+using WorkspaceManager.Core.Ai;
 using WorkspaceManager.Core.Modules;
 using WorkspaceManager.Core.Platform;
 using WorkspaceManager.Core.Reports;
@@ -52,6 +54,8 @@ public static class AppHost
         builder.Services.AddSingleton<IRepoLocks, RepoLocks>();
         builder.Services.AddSingleton<ISyncService, SyncService>();
         builder.Services.AddSingleton<IRepoInsightReader, RepoInsightReader>();
+        builder.Services.AddSingleton<IAiKeyStore>(sp => new AiKeyStore(sp.GetService<ISecretStore>()));
+        builder.Services.AddHttpClient<IAiClient, GeminiClient>(c => c.Timeout = TimeSpan.FromMinutes(5));
 
         var role = BuiltInRoles.ProjectManager;
         var modules = AllModules().Where(m => role.ModuleIds.Contains(m.Id)).ToList();
@@ -72,7 +76,30 @@ public static class AppHost
 
         var host = builder.Build();
         PrepareSettings(host.Services.GetRequiredService<ISettingsStore>(), options);
+        ImportLegacyGeminiKey(host.Services);
         return host;
+    }
+
+    /// <summary>The PowerShell tool kept its key DPAPI-encrypted in %LOCALAPPDATA%; take it over once.</summary>
+    private static void ImportLegacyGeminiKey(IServiceProvider services)
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var keys = services.GetRequiredService<IAiKeyStore>();
+        if (keys.KeySource == "secret store")
+        {
+            return;
+        }
+
+        var legacy = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "workspace_manager_gemini.key");
+        if (DpapiSecretStore.ReadLegacyPowerShellSecret(legacy) is { Length: > 0 } key)
+        {
+            keys.SaveKey(key);
+            Log.Information("Gemini key imported from the PowerShell tool");
+        }
     }
 
     private static void PrepareSettings(ISettingsStore store, AppOptions options)

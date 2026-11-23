@@ -16,6 +16,7 @@
     <ProjectReference Include="..\WorkspaceManager.Git\WorkspaceManager.Git.csproj" />
     <ProjectReference Include="..\WorkspaceManager.Data\WorkspaceManager.Data.csproj" />
     <ProjectReference Include="..\WorkspaceManager.Platform\WorkspaceManager.Platform.csproj" />
+    <ProjectReference Include="..\WorkspaceManager.Ai\WorkspaceManager.Ai.csproj" />
     <ProjectReference Include="..\Modules\WorkspaceManager.Modules.Pm\WorkspaceManager.Modules.Pm.csproj" />
   </ItemGroup>
   <ItemGroup>
@@ -26,6 +27,7 @@
     <PackageReference Include="Avalonia.Controls.DataGrid" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
     <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Serilog.Extensions.Hosting" />
     <PackageReference Include="Serilog.Sinks.File" />
     <PackageReference Include="Velopack" />

@@ -21,6 +21,11 @@ public sealed class AppSettings
     /// <summary>Activity window of the PM report, in days.</summary>
     public int ReportDays { get; set; } = 7;
 
+    /// <summary>AI features can be switched off completely.</summary>
+    public bool AiEnabled { get; set; } = true;
+
+    public string AiModel { get; set; } = "gemini-2.5-flash";
+
     /// <summary>True once the settings of the old PowerShell tool were looked at.</summary>
     public bool LegacyImportDone { get; set; }
 }
@@ -44,4 +49,10 @@ public interface IDialogService
     Task<string?> PickSaveFileAsync(string title, string suggestedFileName, string extension);
 
     Task CopyToClipboardAsync(string text);
+
+    /// <summary>Open-file dialog. Returns the chosen path, or null when cancelled.</summary>
+    Task<string?> PickOpenFileAsync(string title);
+
+    /// <summary>Asks for a secret (masked input). Returns null when cancelled.</summary>
+    Task<string?> PromptSecretAsync(string title, string label);
 }
