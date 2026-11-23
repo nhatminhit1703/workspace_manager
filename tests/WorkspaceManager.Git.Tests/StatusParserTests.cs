@@ -98,9 +98,9 @@ public class RefParserTests
     public void Remote_branches_without_prefix_and_head()
     {
         var set = RefParser.ParseRemoteBranches(
-            "refs/remotes/origin/HEAD\nrefs/remotes/origin/main\r\nrefs/remotes/origin/global/2026.001_feature\nrefs/remotes/upstream/main\n",
+            "refs/remotes/origin/HEAD\nrefs/remotes/origin/main\r\nrefs/remotes/origin/release/2026.1\nrefs/remotes/upstream/main\n",
             "origin");
 
-        set.Should().BeEquivalentTo(["main", "global/2026.001_feature"]);
+        set.Should().BeEquivalentTo(["main", "release/2026.1"]);
     }
 }

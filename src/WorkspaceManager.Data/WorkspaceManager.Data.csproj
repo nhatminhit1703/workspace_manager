@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Local data: settings file (SQLite cache and report history come later). -->
+  <ItemGroup>
+    <ProjectReference Include="..\WorkspaceManager.Core\WorkspaceManager.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+</Project>

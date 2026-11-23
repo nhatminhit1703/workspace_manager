@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "feature/**", "fix/**"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-test:
+    name: Build and test (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --no-restore -c Release
+
+      - name: Test
+        run: dotnet test --no-build -c Release
+
+      - name: Format
+        if: runner.os == 'Windows'
+        run: dotnet format --no-restore --verify-no-changes
+
+  forbidden-content:
+    name: No internal data in tracked files
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check forbidden patterns
+        env:
+          FORBIDDEN_PATTERNS: ${{ secrets.FORBIDDEN_PATTERNS }}
+        run: |
+          if [ -z "$FORBIDDEN_PATTERNS" ]; then
+            echo "::notice::FORBIDDEN_PATTERNS secret is not set, check skipped."
+            exit 0
+          fi
+          if git grep -n -i -E "$FORBIDDEN_PATTERNS" -- . ; then
+            echo "::error::Tracked files contain internal data (see ADR 004)."
+            exit 1
+          fi
+          echo "No forbidden pattern found."

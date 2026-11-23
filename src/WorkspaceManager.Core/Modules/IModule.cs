@@ -29,6 +29,12 @@ public sealed record NavigationItem(
     string? RequiredPermission = null,
     int Order = 0);
 
+/// <summary>A page view model that loads its data the first time it is shown.</summary>
+public interface IPage
+{
+    Task OnFirstShownAsync();
+}
+
 /// <summary>View model type to view factory. The factory returns a UI control (typed as object so Core stays UI-free).</summary>
 public interface IViewRegistry
 {

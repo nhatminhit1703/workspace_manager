@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>WorkspaceManager</AssemblyName>
+    <RootNamespace>WorkspaceManager.App</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WorkspaceManager.Core\WorkspaceManager.Core.csproj" />
+    <ProjectReference Include="..\WorkspaceManager.Git\WorkspaceManager.Git.csproj" />
+    <ProjectReference Include="..\WorkspaceManager.Data\WorkspaceManager.Data.csproj" />
+    <ProjectReference Include="..\WorkspaceManager.Platform\WorkspaceManager.Platform.csproj" />
+    <ProjectReference Include="..\Modules\WorkspaceManager.Modules.Pm\WorkspaceManager.Modules.Pm.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" />
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+    <PackageReference Include="Serilog.Extensions.Hosting" />
+    <PackageReference Include="Serilog.Sinks.File" />
+    <PackageReference Include="AvaloniaUI.DiagnosticsSupport">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="WorkspaceManager.App.Tests" />
+  </ItemGroup>
+</Project>

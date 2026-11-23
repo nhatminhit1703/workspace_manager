@@ -1,0 +1,33 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:shell="using:WorkspaceManager.App.Shell"
+        xmlns:modules="using:WorkspaceManager.Core.Modules"
+        x:Class="WorkspaceManager.App.Shell.MainWindow"
+        x:DataType="shell:ShellViewModel"
+        Title="{Binding Title}"
+        Width="1280" Height="800" MinWidth="900" MinHeight="500"
+        WindowStartupLocation="CenterScreen">
+
+  <Grid ColumnDefinitions="200,*">
+    <!-- Navigation of the active role -->
+    <Border Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+      <DockPanel>
+        <StackPanel DockPanel.Dock="Top" Margin="14,16,14,10" Spacing="2">
+          <TextBlock Text="Workspace Manager" FontWeight="Bold" FontSize="15" />
+          <TextBlock Text="{Binding Role.DisplayName}" Opacity="0.65" FontSize="12" />
+        </StackPanel>
+        <ListBox ItemsSource="{Binding Navigation}" SelectedItem="{Binding SelectedItem}"
+                 Background="Transparent" Margin="6,0">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="modules:NavigationItem">
+              <TextBlock Text="{Binding Title}" Margin="4,2" />
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </DockPanel>
+    </Border>
+
+    <!-- Current page: the view comes from the ViewRegistry data template -->
+    <ContentControl Grid.Column="1" Content="{Binding CurrentPage}" />
+  </Grid>
+</Window>

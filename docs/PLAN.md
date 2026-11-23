@@ -37,7 +37,7 @@
 | Lớp | Chọn | Ghi chú |
 |---|---|---|
 | Runtime | .NET 10 LTS, C# 14, `Nullable` bật | |
-| UI | **Avalonia 11** + **CommunityToolkit.Mvvm** | XAML + MVVM gần giống WPF; chạy Windows / macOS / Linux |
+| UI | **Avalonia 12** + **CommunityToolkit.Mvvm** | XAML + MVVM gần giống WPF; chạy Windows / macOS / Linux |
 | Giao diện | Theme Fluent của Avalonia, sáng / tối, tự thiết kế | Không copy UI của Fork / SourceTree |
 | Git engine | **git CLI** của máy, parse định dạng máy (`--porcelain=v2 -z`, `--format` + NUL) | Đúng 100% hành vi git: credential manager, hooks, LFS, worktree |
 | Đọc nhanh (tuỳ chọn) | LibGit2Sharp, chỉ đọc khi cần tốc độ | Không dùng để ghi |
@@ -50,7 +50,7 @@
 | Tích hợp hệ điều hành | `IPlatformService`: mở thư mục, terminal, editor, đường dẫn dữ liệu, thông báo | Windows làm trước; macOS ở Phase 7 |
 | Dữ liệu local | JSON settings + **SQLite** (cache commit, ticket, lịch sử report) | |
 | Đóng gói + auto-update | **Velopack** + **GitHub Releases** (repo public nên không cần token) | Windows `Setup.exe` trước; macOS `.dmg` ở Phase 7 |
-| Test | xUnit, FluentAssertions, Verify (snapshot), **Avalonia.Headless** (test UI không cần màn hình) | Chạy được trên CI mọi hệ điều hành |
+| Test | xUnit v3 (giữ bản 3.x cho khớp Avalonia.Headless.XUnit) trên Microsoft.Testing.Platform, **AwesomeAssertions** (FluentAssertions 8 không còn miễn phí cho thương mại), **Avalonia.Headless** (test UI không cần màn hình) | Chạy được trên CI mọi hệ điều hành |
 | CI | GitHub Actions | Phase 0: `windows-latest` (build, test, đóng gói) + `ubuntu-latest` (build + unit test, để bắt sớm code chỉ chạy được trên Windows). Phase 7: thêm `macos-latest` |
 
 ### 2.2 Cấu trúc solution
@@ -66,17 +66,17 @@ workspace_manager/
     WorkspaceManager.Reports/        PM report, AI report, bug hunt rules, xuất HTML / PCL
     WorkspaceManager.Data/           SQLite, settings, migrate cấu hình bản PowerShell
     WorkspaceManager.Platform/       IPlatformService, ISecretStore: Windows/ (Phase 0), MacOS/ (Phase 7)
-    Modules/
-      WorkspaceManager.Module.Pm/          vai trò PM (Phase 0)
-      WorkspaceManager.Module.GitClient/   Git client (Phase 1–2), dùng chung cho mọi vai trò
-      WorkspaceManager.Module.Developer/   Phase 6
-      WorkspaceManager.Module.Reviewer/    Phase 6
+    Modules/                         (tên `Modules` số nhiều: `Module` là từ khoá của VB, analyzer CA1716 chặn)
+      WorkspaceManager.Modules.Pm/          vai trò PM (Phase 0)
+      WorkspaceManager.Modules.GitClient/   Git client (Phase 1–2), dùng chung cho mọi vai trò
+      WorkspaceManager.Modules.Developer/   Phase 6
+      WorkspaceManager.Modules.Reviewer/    Phase 6
   tests/
     *.Tests (unit), WorkspaceManager.IntegrationTests (repo git tạm), WorkspaceManager.UiTests (Avalonia.Headless)
   samples/workspace.sample.json      cấu hình mẫu, chỉ có giá trị giả (mục 6.1)
   docs/  PLAN.md, adr/, user-guide/
   .github/workflows/  ci.yml, release.yml
-  Directory.Build.props, .editorconfig, global.json, WorkspaceManager.sln
+  Directory.Build.props, Directory.Packages.props, .editorconfig, global.json, WorkspaceManager.slnx
 ```
 
 ### 2.3 Nguyên tắc
@@ -292,7 +292,29 @@ Bản PowerShell **không nằm trong repo public này** (đã gỡ ngày 2026-1
 | Repo code của team có thể nằm trên Git server khác GitHub | Thấp | Git chạy bình thường với mọi remote; chỉ PR / issue / CI là của GitHub |
 | Lộ token / dữ liệu khi dùng AI | Trung bình | `ISecretStore`; AI có nút tắt; chỉ gửi diff khi người dùng bấm; xem trước dữ liệu gửi đi |
 
-## 10. Việc làm ngay (Phase 0, tuần 1)
+## 10. Tiến độ
+
+### Phase 0 – tuần 1 (2026-11-23, branch `feature/phase0-foundation`)
+
+| Việc | Trạng thái |
+|---|---|
+| Cài .NET 10 SDK (10.0.404) + template Avalonia | ✅ |
+| Solution `.slnx`, central package management, analyzers = lỗi, `.editorconfig`, `dotnet format` sạch | ✅ |
+| `Git`: GitRunner, parser `status --porcelain=v2 -z`, remote branches, RepoStatusReader, WorkspaceScanner | ✅ |
+| So số liệu với bản PowerShell trên workspace thật (25 repo) | ✅ khớp 100%, đọc hết trong ~3,6 giây |
+| Core: module / role / quyền, `IPlatformService`, `ISecretStore`, settings | ✅ |
+| Platform Windows (Explorer, Git Bash / Windows Terminal, VS Code, DPAPI, đọc key bản PowerShell) | ✅ |
+| Data: settings JSON, import lựa chọn repo từ bản PowerShell | ✅ |
+| Shell Avalonia + module PM: grid repo, lọc, chọn nhanh, mở thư mục / terminal / VS Code | ✅ |
+| Test: 39 test (unit, integration git thật, ViewModel, UI headless) | ✅ |
+| ADR 001–005, CI GitHub Actions (Windows + Ubuntu, format, kiểm tra dữ liệu nội bộ) | ✅ |
+| Prototype commit graph + diff (AvaloniaEdit) | ⏳ tuần 2 |
+
+### Phase 0 – còn lại
+Fetch / checkout / pull hàng loạt (hàng đợi lệnh theo repo, chỉ fast-forward) → PM report → AI report (Gemini, key qua `ISecretStore`)
+→ bug hunt PCL → PM Dashboard → màn hình thiết lập lần đầu → bộ cài + auto-update Velopack → bỏ hẳn bản PowerShell.
+
+## 10b. Việc làm ngay (Phase 0, tuần 1) – kế hoạch ban đầu
 
 1. Cài .NET 10 SDK (`winget install Microsoft.DotNet.SDK.10`) và template Avalonia (`dotnet new install Avalonia.Templates`).
 2. Tạo solution, `Directory.Build.props`, `.editorconfig`, `global.json`, `LICENSE`, CI GitHub Actions (Windows + Ubuntu).
