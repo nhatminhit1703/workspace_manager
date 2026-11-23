@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Git engine: runs the git CLI and parses its machine-readable output. -->
+  <ItemGroup>
+    <ProjectReference Include="..\WorkspaceManager.Core\WorkspaceManager.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="WorkspaceManager.Git.Tests" />
+  </ItemGroup>
+</Project>

@@ -17,3 +17,6 @@ workspace.json
 *.log
 *.tmp
 .vscode/
+
+# Test output
+*.trx

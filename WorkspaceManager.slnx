@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/WorkspaceManager.Core/WorkspaceManager.Core.csproj" />
+    <Project Path="src/WorkspaceManager.Git/WorkspaceManager.Git.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/WorkspaceManager.Git.Tests/WorkspaceManager.Git.Tests.csproj" />
+  </Folder>
+</Solution>
