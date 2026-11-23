@@ -18,10 +18,11 @@ public sealed partial class ShellViewModel : ObservableObject
     [ObservableProperty]
     private object? _currentPage;
 
-    public ShellViewModel(IServiceProvider services, Role role, IReadOnlyList<IModule> modules)
+    public ShellViewModel(IServiceProvider services, Role role, IReadOnlyList<IModule> modules, UpdateBannerViewModel update)
     {
         ArgumentNullException.ThrowIfNull(role);
         _services = services;
+        Update = update;
         Role = role;
         foreach (var item in modules.SelectMany(m => m.GetNavigationItems())
                      .Where(i => i.RequiredPermission is null || role.Grants(i.RequiredPermission))
@@ -34,6 +35,8 @@ public sealed partial class ShellViewModel : ObservableObject
     }
 
     public Role Role { get; }
+
+    public UpdateBannerViewModel Update { get; }
 
     public ObservableCollection<NavigationItem> Navigation { get; } = [];
 

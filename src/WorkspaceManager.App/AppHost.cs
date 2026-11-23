@@ -2,10 +2,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using WorkspaceManager.App.Shell;
+using WorkspaceManager.App.Updates;
 using WorkspaceManager.Core.Modules;
 using WorkspaceManager.Core.Platform;
 using WorkspaceManager.Core.Repositories;
 using WorkspaceManager.Core.Settings;
+using WorkspaceManager.Core.Updates;
 using WorkspaceManager.Data;
 using WorkspaceManager.Git;
 using WorkspaceManager.Modules.Pm;
@@ -62,6 +64,8 @@ public static class AppHost
         builder.Services.AddSingleton<IViewRegistry>(views);
         builder.Services.AddSingleton(role);
         builder.Services.AddSingleton<IReadOnlyList<IModule>>(modules);
+        builder.Services.AddSingleton<IUpdateService, VelopackUpdateService>();
+        builder.Services.AddSingleton<UpdateBannerViewModel>();
         builder.Services.AddSingleton<ShellViewModel>();
 
         var host = builder.Build();

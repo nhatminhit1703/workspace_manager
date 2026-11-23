@@ -5,6 +5,7 @@
         x:Class="WorkspaceManager.App.Shell.MainWindow"
         x:DataType="shell:ShellViewModel"
         Title="{Binding Title}"
+        Icon="avares://WorkspaceManager/Assets/app.ico"
         Width="1280" Height="800" MinWidth="900" MinHeight="500"
         WindowStartupLocation="CenterScreen">
 
@@ -27,7 +28,23 @@
       </DockPanel>
     </Border>
 
-    <!-- Current page: the view comes from the ViewRegistry data template -->
-    <ContentControl Grid.Column="1" Content="{Binding CurrentPage}" />
+    <DockPanel Grid.Column="1">
+      <!-- New release banner -->
+      <Border DockPanel.Dock="Top" IsVisible="{Binding Update.IsVisible}" Background="#1F6FEB" Padding="12,8">
+        <Grid ColumnDefinitions="*,Auto">
+          <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+            <TextBlock Text="{Binding Update.Message}" Foreground="White" VerticalAlignment="Center" />
+            <ProgressBar Value="{Binding Update.Progress}" Maximum="100" Width="120" IsVisible="{Binding Update.IsDownloading}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+            <Button Content="Update and restart" Command="{Binding Update.InstallCommand}" />
+            <Button Content="Later" Command="{Binding Update.DismissCommand}" />
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <!-- Current page: the view comes from the ViewRegistry data template -->
+      <ContentControl Content="{Binding CurrentPage}" />
+    </DockPanel>
   </Grid>
 </Window>

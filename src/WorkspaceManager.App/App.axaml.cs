@@ -26,8 +26,12 @@ public partial class App : Application
             var window = new MainWindow { DataContext = _host.Services.GetRequiredService<ShellViewModel>() };
             dialogs.Owner = window;
             desktop.MainWindow = window;
+            var updates = new CancellationTokenSource();
+            _ = _host.Services.GetRequiredService<UpdateBannerViewModel>().RunAsync(updates.Token);
             desktop.Exit += (_, _) =>
             {
+                updates.Cancel();
+                updates.Dispose();
                 _host.Dispose();
                 Log.CloseAndFlush();
             };
