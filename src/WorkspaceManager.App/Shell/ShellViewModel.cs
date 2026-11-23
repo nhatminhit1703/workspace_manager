@@ -11,6 +11,8 @@ public sealed partial class ShellViewModel : ObservableObject
 {
     private readonly IServiceProvider _services;
     private readonly Dictionary<string, object> _pages = [];
+    private bool _windowShown;
+    private IPage? _pendingFirstShow;
 
     [ObservableProperty]
     private NavigationItem? _selectedItem;
@@ -36,6 +38,28 @@ public sealed partial class ShellViewModel : ObservableObject
 
     public Role Role { get; }
 
+    /// <summary>Called once the main window is on screen: pages load their data only then, so the window appears at once.</summary>
+    public void OnWindowShown()
+    {
+        _windowShown = true;
+        var p = _pendingFirstShow;
+        _pendingFirstShow = null;
+        if (p is not null)
+        {
+            _ = p.OnFirstShownAsync();
+        }
+    }
+
+    /// <summary>Opens the navigation entry with this id (command line <c>--page</c>).</summary>
+    public void Open(string? id)
+    {
+        var item = Navigation.FirstOrDefault(i => string.Equals(i.Id, id, StringComparison.OrdinalIgnoreCase));
+        if (item is not null)
+        {
+            SelectedItem = item;
+        }
+    }
+
     public UpdateBannerViewModel Update { get; }
 
     public ObservableCollection<NavigationItem> Navigation { get; } = [];
@@ -58,7 +82,14 @@ public sealed partial class ShellViewModel : ObservableObject
             _pages[value.Id] = page;
             if (page is IPage p)
             {
-                _ = p.OnFirstShownAsync();
+                if (_windowShown)
+                {
+                    _ = p.OnFirstShownAsync();
+                }
+                else
+                {
+                    _pendingFirstShow = p;
+                }
             }
         }
 

@@ -5,6 +5,7 @@
     <Project Path="src/WorkspaceManager.Data/WorkspaceManager.Data.csproj" />
     <Project Path="src/WorkspaceManager.Git/WorkspaceManager.Git.csproj" />
     <Project Path="src/WorkspaceManager.Platform/WorkspaceManager.Platform.csproj" />
+    <Project Path="src/WorkspaceManager.Reports/WorkspaceManager.Reports.csproj" />
   </Folder>
   <Folder Name="/src/Modules/">
     <Project Path="src/Modules/WorkspaceManager.Modules.Pm/WorkspaceManager.Modules.Pm.csproj" />

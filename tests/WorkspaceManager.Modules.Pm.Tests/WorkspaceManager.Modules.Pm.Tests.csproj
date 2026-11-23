@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Modules\WorkspaceManager.Modules.Pm\WorkspaceManager.Modules.Pm.csproj" />
     <ProjectReference Include="..\..\src\WorkspaceManager.Data\WorkspaceManager.Data.csproj" />
+    <ProjectReference Include="..\..\src\WorkspaceManager.Reports\WorkspaceManager.Reports.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Using Include="Xunit" />

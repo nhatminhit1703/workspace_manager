@@ -18,12 +18,28 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var sinceStart = (int)(DateTime.Now - System.Diagnostics.Process.GetCurrentProcess().StartTime).TotalMilliseconds;
             var dialogs = new AvaloniaDialogService();
-            _host = AppHost.Build(AppOptions.Parse(desktop.Args ?? []), dialogs);
+            var options = AppOptions.Parse(desktop.Args ?? []);
+            _host = AppHost.Build(options, dialogs);
+            var tHost = sw.ElapsedMilliseconds;
             Log.Information("Workspace Manager {Version} started", ShellViewModel.Version);
 
             DataTemplates.Add(_host.Services.GetRequiredService<ViewRegistry>());
-            var window = new MainWindow { DataContext = _host.Services.GetRequiredService<ShellViewModel>() };
+            var shell = _host.Services.GetRequiredService<ShellViewModel>();
+            shell.Open(options.Page);
+            var tShell = sw.ElapsedMilliseconds;
+            var window = new MainWindow { DataContext = shell };
+            var tWindow = sw.ElapsedMilliseconds;
+            Log.Information("Startup: velopack {Vp} ms, framework ready {Start} ms after process start; host {Host} ms, shell {Shell} ms, window {Window} ms", Program.VelopackMs,
+                sinceStart, tHost, tShell - tHost, tWindow - tShell);
+            window.Opened += (_, _) =>
+            {
+                var startup = DateTime.Now - System.Diagnostics.Process.GetCurrentProcess().StartTime;
+                Log.Information("Main window opened {Ms} ms after process start", (int)startup.TotalMilliseconds);
+                shell.OnWindowShown();
+            };
             dialogs.Owner = window;
             desktop.MainWindow = window;
             var updates = new CancellationTokenSource();

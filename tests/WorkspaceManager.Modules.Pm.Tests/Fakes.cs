@@ -45,6 +45,7 @@ internal sealed class MemorySettings(AppSettings? initial = null) : ISettingsSto
         SyncBranch = s.SyncBranch,
         SyncStash = s.SyncStash,
         SyncKeepCurrentBranch = s.SyncKeepCurrentBranch,
+        ReportDays = s.ReportDays,
     };
 }
 
@@ -58,6 +59,18 @@ internal sealed class FakeDialogs(string? folder, bool confirm = true) : IDialog
     {
         Questions.Add(message);
         return Task.FromResult(confirm);
+    }
+
+    public string? SavePath { get; set; }
+
+    public string? Clipboard { get; private set; }
+
+    public Task<string?> PickSaveFileAsync(string title, string suggestedFileName, string extension) => Task.FromResult(SavePath);
+
+    public Task CopyToClipboardAsync(string text)
+    {
+        Clipboard = text;
+        return Task.CompletedTask;
     }
 }
 

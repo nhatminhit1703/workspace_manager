@@ -75,7 +75,8 @@ public sealed partial class ReposViewModel
         try
         {
             var progress = new OrderedProgress<SyncResult>(r => AddLog(r.Repo, r.Outcome.ToString(), Describe(r), KindOf(r)));
-            var results = await _sync.RunAsync(request, repos.Select(r => r.Path).ToList(), progress);
+            var paths = repos.Select(r => r.Path).ToList();
+            var results = await Task.Run(() => _sync.RunAsync(request, paths, progress));
             var ok = results.Count(r => r.IsOk);
             var failed = results.Count(r => r.Outcome == SyncOutcome.Failed);
             var skipped = results.Count(r => r.Outcome == SyncOutcome.Skipped);

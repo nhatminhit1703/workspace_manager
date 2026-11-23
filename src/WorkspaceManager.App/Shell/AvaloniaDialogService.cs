@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
 using Avalonia.Layout;
 using Avalonia.Platform.Storage;
 using WorkspaceManager.Core.Settings;
@@ -27,6 +28,31 @@ public sealed class AvaloniaDialogService : IDialogService
 
         var result = await storage.OpenFolderPickerAsync(options);
         return result.Count > 0 ? result[0].TryGetLocalPath() : null;
+    }
+
+    public async Task<string?> PickSaveFileAsync(string title, string suggestedFileName, string extension)
+    {
+        if (Owner is null)
+        {
+            return null;
+        }
+
+        var file = await Owner.StorageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
+        {
+            Title = title,
+            SuggestedFileName = suggestedFileName,
+            DefaultExtension = extension,
+            FileTypeChoices = [new FilePickerFileType(extension.ToUpperInvariant() + " file") { Patterns = ["*." + extension] }],
+        });
+        return file?.TryGetLocalPath();
+    }
+
+    public async Task CopyToClipboardAsync(string text)
+    {
+        if (Owner?.Clipboard is { } clipboard)
+        {
+            await clipboard.SetTextAsync(text);
+        }
     }
 
     public async Task<bool> ConfirmAsync(string title, string message)

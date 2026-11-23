@@ -5,6 +5,7 @@ using WorkspaceManager.App.Shell;
 using WorkspaceManager.App.Updates;
 using WorkspaceManager.Core.Modules;
 using WorkspaceManager.Core.Platform;
+using WorkspaceManager.Core.Reports;
 using WorkspaceManager.Core.Repositories;
 using WorkspaceManager.Core.Settings;
 using WorkspaceManager.Core.Updates;
@@ -50,6 +51,7 @@ public static class AppHost
         builder.Services.AddSingleton<IWorkspaceScanner, WorkspaceScanner>();
         builder.Services.AddSingleton<IRepoLocks, RepoLocks>();
         builder.Services.AddSingleton<ISyncService, SyncService>();
+        builder.Services.AddSingleton<IRepoInsightReader, RepoInsightReader>();
 
         var role = BuiltInRoles.ProjectManager;
         var modules = AllModules().Where(m => role.ModuleIds.Contains(m.Id)).ToList();
@@ -91,13 +93,13 @@ public static class AppHost
     }
 }
 
-/// <summary>Command line: <c>--workspace &lt;folder&gt;</c>, <c>--appdata &lt;folder&gt;</c> (tests).</summary>
-public sealed record AppOptions(string? WorkspaceRoot, string? AppDataDirectory)
+/// <summary>Command line: <c>--workspace &lt;folder&gt;</c>, <c>--page &lt;navigation id&gt;</c>, <c>--appdata &lt;folder&gt;</c> (tests).</summary>
+public sealed record AppOptions(string? WorkspaceRoot, string? AppDataDirectory, string? Page = null)
 {
     public static AppOptions Parse(IReadOnlyList<string> args)
     {
         ArgumentNullException.ThrowIfNull(args);
-        string? workspace = null, appData = null;
+        string? workspace = null, appData = null, page = null;
         for (var i = 0; i < args.Count - 1; i++)
         {
             switch (args[i])
@@ -108,11 +110,14 @@ public sealed record AppOptions(string? WorkspaceRoot, string? AppDataDirectory)
                 case "--appdata":
                     appData = args[++i];
                     break;
+                case "--page":
+                    page = args[++i];
+                    break;
                 default:
                     break;
             }
         }
 
-        return new AppOptions(workspace, appData);
+        return new AppOptions(workspace, appData, page);
     }
 }

@@ -1,0 +1,153 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:WorkspaceManager.Modules.Pm.Report"
+             xmlns:rep="using:WorkspaceManager.Core.Reports"
+             x:Class="WorkspaceManager.Modules.Pm.Report.PmReportView"
+             x:DataType="vm:PmReportViewModel">
+
+  <DockPanel>
+    <!-- Options -->
+    <Border DockPanel.Dock="Top" Padding="12,10" BorderThickness="0,0,0,1"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+      <WrapPanel>
+        <TextBlock Text="Activity days:" VerticalAlignment="Center" Opacity="0.7" Margin="0,0,6,0" />
+        <NumericUpDown Value="{Binding Days}" Minimum="1" Maximum="90" Increment="1" FormatString="0" Width="110" />
+        <TextBlock Text="Track branch:" VerticalAlignment="Center" Opacity="0.7" Margin="14,0,6,0" />
+        <TextBox Text="{Binding FocusBranch}" PlaceholderText="optional, e.g. feature/123-login" Width="300" />
+        <Button Content="Generate" Command="{Binding GenerateCommand}" Classes="accent" Margin="12,0,0,0" HotKey="F5" />
+        <Button Content="Export HTML..." Command="{Binding ExportHtmlCommand}" IsEnabled="{Binding HasReport}" Margin="6,0,0,0" />
+        <ProgressBar IsIndeterminate="True" IsVisible="{Binding IsBusy}" Width="100" Margin="12,0,0,0" />
+      </WrapPanel>
+    </Border>
+
+    <Border DockPanel.Dock="Bottom" Padding="12,6" BorderThickness="0,1,0,0"
+            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+      <TextBlock Text="{Binding StatusText}" />
+    </Border>
+
+    <ScrollViewer>
+      <StackPanel Margin="12" Spacing="10" IsVisible="{Binding HasReport}">
+        <!-- KPIs -->
+        <ItemsControl ItemsSource="{Binding Kpis}">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+              <WrapPanel />
+            </ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="rep:ReportKpi">
+              <Border Classes="kpi" Width="150" Margin="0,0,8,8" Padding="10,8" CornerRadius="6" BorderThickness="1"
+                      BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}">
+                <StackPanel>
+                  <TextBlock Text="{Binding Value}" FontSize="24" FontWeight="Bold"
+                             Classes.warn="{Binding Tone, Converter={x:Static vm:ToneIs.Warning}}"
+                             Classes.bad="{Binding Tone, Converter={x:Static vm:ToneIs.Bad}}" />
+                  <TextBlock Text="{Binding Name}" Opacity="0.7" FontSize="12" TextWrapping="Wrap" />
+                </StackPanel>
+              </Border>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Action items -->
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Classes="h2" Text="Action items" />
+          <CheckBox Grid.Column="1" Content="Show low priority and info" IsChecked="{Binding ShowLowAndInfo}" />
+        </Grid>
+        <DataGrid ItemsSource="{Binding Actions}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column"
+                  GridLinesVisibility="Horizontal" CanUserSortColumns="True" MaxHeight="420">
+          <DataGrid.Columns>
+            <DataGridTemplateColumn Header="Priority" Width="100" SortMemberPath="Level">
+              <DataGridTemplateColumn.CellTemplate>
+                <DataTemplate x:DataType="vm:ActionRow">
+                  <Border Classes="level" Classes.high="{Binding Level, Converter={x:Static vm:LevelIs.High}}"
+                          Classes.medium="{Binding Level, Converter={x:Static vm:LevelIs.Medium}}"
+                          Classes.low="{Binding Level, Converter={x:Static vm:LevelIs.Low}}"
+                          Classes.info="{Binding Level, Converter={x:Static vm:LevelIs.Info}}"
+                          CornerRadius="9" Padding="8,1" Margin="6,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding LevelText}" FontSize="11" FontWeight="Bold" Foreground="White" />
+                  </Border>
+                </DataTemplate>
+              </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+            <DataGridTextColumn Header="Repository" Binding="{Binding Repo, x:DataType=vm:ActionRow}" Width="220" />
+            <DataGridTemplateColumn Header="Issue" Width="*">
+              <DataGridTemplateColumn.CellTemplate>
+                <DataTemplate x:DataType="vm:ActionRow">
+                  <TextBlock Text="{Binding Issue}" TextWrapping="Wrap" Margin="8,4" VerticalAlignment="Center" />
+                </DataTemplate>
+              </DataGridTemplateColumn.CellTemplate>
+            </DataGridTemplateColumn>
+            <DataGridTextColumn Header="Suggested action" Binding="{Binding SuggestedAction, x:DataType=vm:ActionRow}" Width="300" />
+          </DataGrid.Columns>
+        </DataGrid>
+        <TextBlock Text="Nothing to do: every repository is clean and in sync." IsVisible="{Binding !VisibleActionsCount}" Classes="ok" />
+
+        <!-- Branch tracking -->
+        <StackPanel Spacing="6" IsVisible="{Binding HasTracking}">
+          <TextBlock Classes="h2">
+            <Run Text="Branch tracking: " />
+            <Run Text="{Binding FocusBranch}" FontFamily="Cascadia Mono, Consolas, Menlo, monospace" />
+          </TextBlock>
+          <DataGrid ItemsSource="{Binding Tracking}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Repository" Binding="{Binding Repo, x:DataType=vm:TrackingRow}" Width="220" />
+              <DataGridTextColumn Header="On origin" Binding="{Binding OnOrigin, x:DataType=vm:TrackingRow}" Width="100" />
+              <DataGridTextColumn Header="Local branch" Binding="{Binding Local, x:DataType=vm:TrackingRow}" Width="110" />
+              <DataGridTextColumn Header="Checked out" Binding="{Binding CheckedOut, x:DataType=vm:TrackingRow}" Width="*" />
+              <DataGridTextColumn Header="Local vs origin" Binding="{Binding Sync, x:DataType=vm:TrackingRow}" Width="160" />
+            </DataGrid.Columns>
+          </DataGrid>
+        </StackPanel>
+
+        <!-- My work -->
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Classes="h2" Text="My work (daily report)" />
+          <Button Grid.Column="1" Content="Copy" Command="{Binding CopyDailyReportCommand}" />
+        </Grid>
+        <TextBox Text="{Binding DailyReport}" IsReadOnly="True" AcceptsReturn="True" TextWrapping="Wrap"
+                 FontFamily="Cascadia Mono, Consolas, Menlo, monospace" FontSize="12" MaxHeight="300" />
+
+        <!-- Team -->
+        <TextBlock Classes="h2" Text="Team activity" />
+        <DataGrid ItemsSource="{Binding Team}" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+          <DataGrid.Columns>
+            <DataGridTextColumn Header="Author" Binding="{Binding Author, x:DataType=vm:AuthorRow}" Width="200" />
+            <DataGridTextColumn Header="Commits" Binding="{Binding Commits, x:DataType=vm:AuthorRow}" Width="90" />
+            <DataGridTextColumn Header="Repositories" Binding="{Binding Repos, x:DataType=vm:AuthorRow}" Width="*" />
+            <DataGridTextColumn Header="Last commit" Binding="{Binding LastCommit, x:DataType=vm:AuthorRow}" Width="150" />
+          </DataGrid.Columns>
+        </DataGrid>
+      </StackPanel>
+    </ScrollViewer>
+  </DockPanel>
+
+  <UserControl.Styles>
+    <Style Selector="TextBlock.h2">
+      <Setter Property="FontSize" Value="15" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+      <Setter Property="Margin" Value="0,10,0,0" />
+    </Style>
+    <Style Selector="TextBlock.warn">
+      <Setter Property="Foreground" Value="#D9480F" />
+    </Style>
+    <Style Selector="TextBlock.bad">
+      <Setter Property="Foreground" Value="#E03131" />
+    </Style>
+    <Style Selector="TextBlock.ok">
+      <Setter Property="Foreground" Value="#2F9E44" />
+    </Style>
+    <Style Selector="Border.level.high">
+      <Setter Property="Background" Value="#CF222E" />
+    </Style>
+    <Style Selector="Border.level.medium">
+      <Setter Property="Background" Value="#BC4C00" />
+    </Style>
+    <Style Selector="Border.level.low">
+      <Setter Property="Background" Value="#6E7781" />
+    </Style>
+    <Style Selector="Border.level.info">
+      <Setter Property="Background" Value="#0969DA" />
+    </Style>
+  </UserControl.Styles>
+</UserControl>

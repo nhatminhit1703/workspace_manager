@@ -91,20 +91,9 @@ public sealed partial class ReposViewModel : ObservableObject, IPage
             StringComparer.OrdinalIgnoreCase);
         try
         {
-            var paths = _scanner.FindRepositories(WorkspaceRoot!);
-            using var gate = new SemaphoreSlim(MaxParallelReads);
-            var statuses = await Task.WhenAll(paths.Select(async p =>
-            {
-                await gate.WaitAsync();
-                try
-                {
-                    return await _reader.ReadAsync(p);
-                }
-                finally
-                {
-                    gate.Release();
-                }
-            }));
+            // Off the UI thread: starting dozens of git processes would freeze the window.
+            var root = WorkspaceRoot!;
+            var statuses = await Task.Run(() => ReadAllAsync(root));
 
             var now = _time.GetLocalNow();
             _all = statuses.Select(s => new RepoRowViewModel(s, now) { IsSelected = keep.Contains(s.Name) }).ToList();
@@ -122,6 +111,24 @@ public sealed partial class ReposViewModel : ObservableObject, IPage
         {
             IsBusy = false;
         }
+    }
+
+    private async Task<RepoStatus[]> ReadAllAsync(string root)
+    {
+        var paths = _scanner.FindRepositories(root);
+        using var gate = new SemaphoreSlim(MaxParallelReads);
+        return await Task.WhenAll(paths.Select(async p =>
+        {
+            await gate.WaitAsync().ConfigureAwait(false);
+            try
+            {
+                return await _reader.ReadAsync(p).ConfigureAwait(false);
+            }
+            finally
+            {
+                gate.Release();
+            }
+        })).ConfigureAwait(false);
     }
 
     private bool CanRefresh() => !IsBusy;

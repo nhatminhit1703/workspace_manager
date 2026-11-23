@@ -18,6 +18,9 @@ public sealed class AppSettings
 
     public bool SyncKeepCurrentBranch { get; set; }
 
+    /// <summary>Activity window of the PM report, in days.</summary>
+    public int ReportDays { get; set; } = 7;
+
     /// <summary>True once the settings of the old PowerShell tool were looked at.</summary>
     public bool LegacyImportDone { get; set; }
 }
@@ -36,4 +39,9 @@ public interface IDialogService
 
     /// <summary>OK / Cancel question. True when the user confirms.</summary>
     Task<bool> ConfirmAsync(string title, string message);
+
+    /// <summary>Save-as dialog. Returns the chosen path, or null when cancelled.</summary>
+    Task<string?> PickSaveFileAsync(string title, string suggestedFileName, string extension);
+
+    Task CopyToClipboardAsync(string text);
 }
